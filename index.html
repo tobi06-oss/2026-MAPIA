@@ -84,6 +84,23 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .esub{text-align:center;font-size:14px;font-family:Hahmlet,serif;font-weight:600;color:#4a3a28;margin-top:4px;word-break:keep-all}.efoot{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#6b5a44;margin-top:8px;flex-wrap:wrap}
 .eseal{position:absolute;right:6px;top:190px;z-index:3;width:46px;height:46px;background:rgba(180,30,30,.85);color:#f4ead2;font-family:"Song Myung",serif;font-size:32px;display:flex;align-items:center;justify-content:center;transform:rotate(-9deg)}
 .hoe{margin:6px auto 10px;max-width:560px;background:#efe3c4;border:2px solid #3b2a1a;box-shadow:3px 3px 0 #3b2a1a;padding:8px 14px 10px;text-align:center;transform:rotate(-.6deg)}
+.sp-hoe{position:absolute;left:96px;top:22px;width:318px;height:515px;z-index:6!important;background:linear-gradient(#f6ead0,#ecdbb4);color:#2b2118;border:4px solid #5a3a1c;border-radius:6px;box-shadow:0 10px 26px rgba(0,0,0,.65),inset 0 0 30px rgba(140,100,50,.25);display:flex;flex-direction:column;align-items:center;padding:0 0 10px;transform:rotate(-1.2deg)}
+.sp-hbar{width:100%;display:flex;align-items:center;gap:10px;justify-content:center;background:linear-gradient(#8a5d33,#5e3b1c);color:#fbecc9;padding:8px 10px;border-bottom:3px solid #3e2713}
+.sp-hbar span{font-size:30px;background:#f3e6c8;border-radius:4px;padding:0 3px;line-height:1.1}.sp-hbar b{display:block;font-family:"Song Myung",serif;font-weight:400;-webkit-text-stroke:.6px currentColor;font-size:24px;line-height:1.1}.sp-hbar i{font-style:normal;font-size:15px}
+.sp-head{font-family:"Song Myung","Gungsuh",serif;-webkit-text-stroke:.7px currentColor;font-size:24px;line-height:1.3;text-align:center;padding:10px 14px 8px;word-break:keep-all;min-height:96px;display:flex;align-items:center;justify-content:center;color:#2b2118}
+.sp-pic{position:relative;width:282px;flex:1;min-height:0;border:3px solid #3b2a1a;background:#2a2018;overflow:hidden}.sp-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-pic .efb{position:absolute;inset:0;background-size:1000px 546px;background-position:-360px -130px;filter:sepia(.7) brightness(.9)}.sp-pic .eemo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:110px;text-shadow:0 4px 10px rgba(0,0,0,.5)}
+.sp-quip{font-family:"Song Myung",serif;-webkit-text-stroke:.6px currentColor;font-size:22px;margin-top:8px}
+.sp-panel{position:absolute;left:440px;top:92px;width:500px;z-index:6!important;background:linear-gradient(#6e4826,#4c2f15);border:3px solid #2e1b0b;border-radius:8px;box-shadow:0 10px 26px rgba(0,0,0,.65);padding:0 12px 12px}
+.sp-title{font-family:"Song Myung",serif;-webkit-text-stroke:.6px currentColor;color:#fbecc9;font-size:20px;text-align:center;padding:9px 6px}
+.sp-in{background:linear-gradient(#f6ead0,#ead7ac);color:#2b2118;border-radius:4px;padding:12px 14px;box-shadow:inset 0 0 18px rgba(120,80,40,.3);max-height:190px;overflow:auto}
+.sp-prof{display:flex;gap:14px;align-items:flex-start}.sp-frame{flex:0 0 112px;height:136px;border:7px solid #6b4524;outline:2px solid #3e2713;background:#f1dfb8;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 12px rgba(0,0,0,.25)}
+.sp-frame span{font-size:76px;filter:grayscale(.35) sepia(.3)}.sp-info{font-size:16px;line-height:1.55;min-width:0}.sp-info b{color:#5a3a1c}.sp-desc{font-size:13.5px;color:#6b5a44;line-height:1.4;margin-top:4px}
+.srd{color:#a3261c;font-weight:800}.sbl{color:#1f4f7a;font-weight:800}.sp-news{font-size:18px;line-height:1.6;text-align:center;padding:10px}
+.sp-tally .bar{margin:3px 0}
+.sp-status{margin-top:10px;background:rgba(20,14,8,.85);border:1.5px solid #c9a46a;border-radius:6px;color:#f3e6c8;text-align:center;padding:8px 10px;font-size:16px}.sp-status b{color:#f0b429;font-family:"Song Myung",serif;font-weight:400;-webkit-text-stroke:.5px currentColor;font-size:19px}
+.sp-lw{margin-top:4px;color:#ffcf9a}.sp-lw b{color:#fff;font-size:20px}
+.sp-btns{display:flex;gap:10px;justify-content:center;margin-top:10px}.sp-btns button{font-size:17px;padding:8px 18px}
 .hoeI{display:block;margin:4px auto 8px;max-width:100%;height:170px;object-fit:contain;border:3px solid #3b2a1a;border-radius:3px}
 .hoeT{font-size:12px;letter-spacing:2px;color:#6b5a44;border-bottom:1.5px dashed #6b5a44;padding-bottom:4px;margin-bottom:6px}
 .hoeH{font-family:"Song Myung","Gungsuh",serif;-webkit-text-stroke:.6px currentColor;font-size:23px;line-height:1.35;color:#1f3f6a;word-break:keep-all}.hoe.hr .hoeH{color:#8a1f1f}
@@ -378,7 +395,7 @@ function viewFor(tok){
     if(p.job==='doctor'){v.targets=aliveP().map(x=>x.token);v.myNight=N.doctor}}
   if(p&&p.role==='M')v.chat=g.chat.slice(-40);
   if(g.phase==='result'&&g.result.dead)v.lastWords=g.cfg.lastWords;
-  if(g.phase==='morning'){v.nightDead=g.result.nightDead&&pname(g.result.nightDead);v.news=g.result.news;v.head=g.result.head;v.deadJob=g.result.job;v.deadFlavor=g.result.flavor}
+  if(g.phase==='morning'){v.nightDead=g.result.nightDead&&pname(g.result.nightDead);v.nightTok=g.result.nightDead;v.news=g.result.news;v.head=g.result.head;v.deadJob=g.result.job;v.deadFlavor=g.result.flavor}
   if(g.phase==='end'){v.winner=g.winner;v.ending=g.ending||(g.winner==='M'?'m_fool':'c_win');v.stats=g.stats||null;v.roles=g.players.map(x=>({name:x.name,role:x.role,job:x.job,flavor:x.flavor,alive:x.alive,apply:!!x.apply}))}
   return v;
 }
@@ -420,7 +437,7 @@ function draw(){
   const ms=$('.mbody'),mscroll=ms?ms.scrollTop:0;
   const night=!!(V&&V.phase==='night');
   $('#stage').className=night?'night':'';
-  $('#stage').innerHTML=stageHtml();$('#mroot').innerHTML=modal?`<div class="dim" id="dim"></div><div class="modal paper"><button class="mclose" id="mclose">✕</button><div class="mbody">${modalHtml()}</div></div>`:'';bind();
+  $('#stage').innerHTML=stageHtml();$('#mroot').innerHTML=modal&&SPREAD[modal]&&V&&spreadHtml()?`<div class="dim" id="dim"></div>${spreadHtml()}`:modal?`<div class="dim" id="dim"></div><div class="modal paper"><button class="mclose" id="mclose">✕</button><div class="mbody">${modalHtml()}</div></div>`:'';bind();
   const ci2=$('#chatin');if(ci2){ci2.value=cv;if(cf)ci2.focus()}const cb=$('#chatbox');if(cb)cb.scrollTop=cb.scrollHeight;
   const ms2=$('.mbody');if(ms2&&modal===lastModal)ms2.scrollTop=mscroll;lastModal=modal;
   const lg=$('#logbox');if(lg)lg.scrollTop=lg.scrollHeight;
@@ -482,6 +499,39 @@ async function saveCard(){const E=endInfo(),m=V.winner==='M';const W=1080;let H=
   try{const f=new File([blob],fn,{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:E.t});return}}catch(e){if(e&&e.name==='AbortError')return}
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
 function hoeHtml(h,red){if(!h)return '';if(typeof h==='string')h={t:h};return `<div class="hoe ${red?'hr':''}"><div class="hoeT">📰 고택 소식 호외요, 호외!</div>${h.a&&ART[h.a]?`<img class="hoeI" src="${ART[h.a]}" alt="">`:''}<div class="hoeH">${esc(h.t)}</div></div>`}
+/* ---- 결과 화면: 왼쪽 호외 신문 + 오른쪽 프로필 ---- */
+const SPREAD={result:1,morning:1};
+const QUIP={caught:['딱 걸렸네!','그럴 줄 알았지!','어딜 도망가!'],wrong:['어라? 어찌지?','아이고 억울해라!','이게 아닌데…'],night:['어라? 어찌지?','아니 이럴 수가!','간밤에 무슨 일이…'],
+ saved:['휴, 살았다!','의원 나리 만세!'],soldier:['끄떡없지!','이 정도쯤이야!'],none:['쿨쿨…','고요하구나~'],tie:['다음엔 꼭!','이거 참 난감하네']};
+function hsh(t){let h=0;for(const c of String(t))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)}
+function spreadHtml(){
+  let kind,head,tok=null,job,flavor,news='',title='',status='',st2='';
+  if(modal==='result'){const r=V.result;if(!r)return '';if(r.dead){tok=r.dead;job=r.job;flavor=r.flavor;kind=r.role==='M'?'caught':'wrong';
+      title=r.role==='M'?'[포박 완료] 관아로 끌려간 자객 프로필':'[관아 송치] 억울하게 끌려간 식구 프로필';
+      status=r.role==='M'?'[상태: 포박된 자객]':'[상태: 억울한 원귀]';st2=r.role==='M'?'오랏줄에 묶여 남은 동료의 활약을 지켜보시오':'다른 식구들의 복수를 지켜보며 응원하시오'}
+    else{kind='tie';title=r.revote?'[공론 결과] 동점! 다시 지목하오':'[공론 결과] 재지목도 동점';status=r.revote?'[동점자끼리 재지목]':'[오늘은 송치 없음]';st2=r.revote?'표가 갈렸으니 동점자 중에서 다시 고르시오':'멍석은 다음 공론을 기약하오'}
+    head=r.head}
+  else{tok=V.nightTok;job=V.deadJob;flavor=V.deadFlavor;news=V.news||'';head=V.head;const ht=head&&(head.t||head)||'';
+    kind=tok?'night':/의원|저승/.test(ht)?'saved':/호위무사/.test(ht)?'soldier':'none';
+    title=tok?'[비보 접수] 간밤에 당한 식구 프로필':'[아침 소식] 간밤의 고택';
+    status=tok?'[상태: 억울한 원귀]':kind==='saved'?'[상태: 모두 무사]':kind==='soldier'?'[상태: 습격 격퇴]':'[상태: 고요한 밤]';st2=tok?'다른 식구들의 복수를 지켜보며 응원하시오':news}
+  if(typeof head==='string')head={t:head};head=head||{t:''};
+  const emo={caught:'⛓️',wrong:'😢',night:'💀',saved:'🌿',soldier:'🛡️',none:'🌙',tie:'🤝'}[kind];
+  const pic=head.a&&ART[head.a]?`<img src="${ART[head.a]}" alt="">`:`<div class="efb" style="background-image:url('${stageBg()}')"></div><div class="eemo">${emo}</div>`;
+  const q=QUIP[kind][hsh(head.t)%QUIP[kind].length];
+  const P=tok&&V.players.find(p=>p.token===tok);const J=JOBS[job]||JOBS.citizen;
+  const ident=!P?'':job==='mafia'?`🗡️ 자객${flavor?` (${esc(flavor.n)} 행세)`:''}`:job==='citizen'&&flavor?esc(flavor.n):`${J.emo} ${J.name}`;
+  const desc=!P?'':job==='citizen'&&flavor?esc(flavor.d):job==='mafia'&&flavor?`“${esc(flavor.d)}” 라며 둘러댔다`:'';
+  const body=P?`<div class="sp-prof"><div class="sp-frame"><span class="${P.gender==='F'?'f':''}">${P.gender==='F'?'👩':'👨'}</span></div><div class="sp-info">
+      <div><b>이름</b> : ${esc(P.name)}</div><div><b>정체</b> : <span class="${job==='mafia'?'srd':'sbl'}">${ident}</span></div>
+      ${P.intro?`<div><b>한마디</b> : “${esc(P.intro)}”</div>`:''}${desc?`<div class="sp-desc">${desc}</div>`:''}${news?`<div class="sp-desc">🐓 ${esc(news)}</div>`:''}</div></div>`
+    :modal==='result'?`<div class="sp-tally">${tallyHtml(V.result.tally,true)}</div>`:`<div class="sp-news">🐓 ${esc(news)}</div>`;
+  const lw=modal==='result'&&V.lastWords?`<div class="sp-lw">🕯️ ${esc(P?P.name:'')}님의 마지막 한마디 <b class="tm"></b></div>`:'';
+  return `<div class="sp-hoe ${kind==='wrong'||kind==='night'?'hr':''}"><div class="sp-hbar"><span>📰</span><div><b>고택 소식</b><i>호외요, 호외!</i></div></div>
+    <div class="sp-head">${esc(head.t)}</div><div class="sp-pic">${pic}</div><div class="sp-quip">${esc(q)}</div></div>
+  <div class="sp-panel"><div class="sp-title">${esc(title)}</div><div class="sp-in">${body}</div>
+    <div class="sp-status"><b>${esc(status)}</b><div>${esc(st2)}</div>${lw}</div>
+    <div class="sp-btns"><button class="wood" id="mclose">확인 / 관전 계속</button>${modal==='result'&&P?`<button class="wood" id="sp-tally">📊 지목 현황</button>`:''}${isHost?`<button class="red" id="sp-next">${V.phase==='result'?'다음으로':'사랑방으로 모이기'}</button>`:''}</div></div>`}
 function verdictHtml(){if(!V.cfg.apply)return'';const vs=V.roles.filter(p=>p.apply&&p.job==='mafia');const won=V.winner==='M';
   const others=V.roles.filter(p=>p.apply&&p.job!=='mafia');if(!vs.length&&!others.length)return'';
   return `<div class="sec-box center"><h3>${won?'🎁 기념품 수여식':'🪵 곤장 집행'}</h3>${vs.length?vs.map(p=>`<div style="font-size:19px;margin:4px 0"><b>${esc(p.name)}</b> ${won?'— 자객으로 승리! 🎁 기념품을 받으세요':`— 생존자들에게 곤장 ${V.cfg.gonjang}대! 엎드리시오 🪵`}</div>`).join(''):'<div class="muted">지원해서 자객이 된 사람은 없었습니다</div>'}
@@ -594,6 +644,7 @@ function modalHtml(){const c=V&&V.cfg;
   case 'player':{const p=V.players.find(x=>x.token===modalArg);if(!p)return '';
     return `<h2>${p.gender==='F'?'👩':'👨'} ${esc(p.name)}</h2>${p.intro?`<div style="font-size:20px;margin:10px 0">“${esc(p.intro)}”</div>`:'<div class="muted">한마디 소개가 없어요</div>'}${!p.alive&&p.rev?revealHtml(p.rev.job,p.rev.flavor):''}${isHost&&V.phase==='lobby'&&p.token!==myToken?btn('kick','내보내기'):''}`}
   case 'card':return V.me&&V.me.role?`<div class="center" id="rolecard"><div class="muted">${esc(V.me.name)}님의 호패 · <b>누르고 있는 동안만</b> 보여요</div>${jobCard(V.me,peekRole)}${V.me.alive?'':'<div class="muted" style="margin-top:8px">💀 탈락했습니다 (관전만, 말하면 안 돼요!)</div>'}</div>`:'';
+  case 'rtally':return V.result?`<h2>📊 ${V.round}일째 지목 현황</h2>${tallyHtml(V.result.tally,true)}`:'';
   case 'chat':return `<h2>🤫 자객들의 밀담</h2>${chatHtml()}`;
   case 'tally':return `<h2>📊 지목 현황</h2>${V.tally?tallyHtml(V.tally):'<div class="muted">지목을 마쳐야 볼 수 있소</div>'}`;
   case 'result':{const r=V.result;if(!r)return '';
@@ -618,7 +669,7 @@ function bind(){
   on('#go-profile','click',()=>{nextAct=null;openM('profile')});
   on('#cornerL','click',()=>{if(!inGameNow())return openM('dex');openM('card')});
   on('#cornerR','click',()=>openM('menu'));
-  on('#mclose','click',()=>{modal=null;errMsg='';draw()});on('#dim','click',()=>{modal=null;draw()});
+  on('#mclose','click',()=>{modal=null;errMsg='';draw()});on('#sp-tally','click',()=>openM('rtally'));on('#sp-next','click',()=>{modal=null;cmd('next')});on('#dim','click',()=>{modal=null;draw()});
   on('#m-rules','click',()=>openM('rules'));on('#m-dex','click',()=>openM('dex'));on('#m-settings','click',()=>openM('settings'));on('#m-invite','click',()=>openM('invite'));
   on('#m-apply','click',()=>openM('apply'));on('#m-card','click',()=>openM('card'));on('#m-chat','click',()=>openM('chat'));on('#m-tally','click',()=>openM('tally'));
   on('#m-result','click',()=>openM('result'));on('#m-morning','click',()=>openM('morning'));on('#m-end','click',()=>openM('end'));
