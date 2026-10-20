@@ -351,7 +351,41 @@ function hoeVote(p){if(p.role==='M')return hoe(p.flavor&&Math.random()<.5?'caugh
 function hoeNight(p){const sp={police:'nightPolice',doctor:'nightDoctor',soldier:'nightSoldier'}[p.job];return hoe(sp?sp:'night',p)}
 function startDay(){G.round++;G.phase='day';G.endAt=Date.now()+G.cfg.minutes*60000;G.votes={};G.revote=false}
 function startVote(revote){G.phase='vote';G.votes={};G.revote=revote;if(!revote)G.cands=aliveP().map(p=>p.token)}
-function hostTimer(){if(G&&G.phase==='day'&&Date.now()>=G.endAt){startVote(false);hostSave();broadcast()}}
+function hostTimer(){if(G&&G.phase==='day'&&Date.now()>=G.endAt){startVote(false);hostSave();broadcast()}botTick()}
+/* ---- 연습용 컴퓨터 식구 ---- */
+const BOTS=[['돌쇠봇','M','밥 세 그릇은 기본이오'],['꽃님봇','F','말보다 눈치가 빠르답니다'],['마당쇠봇','M','장작 패다 왔소'],['아씨봇','F','책 읽다 끌려 나왔어요'],['훈장봇','M','에헴, 다 보이느니라'],['주모봇','F','국밥 한 그릇 하고 가시오'],['머슴봇','M','시키면 다 합니다'],['애기씨봇','F','무서운 건 싫어요'],['포졸봇','M','수상한 자는 다 잡는다'],['침모봇','F','바느질하며 다 듣고 있지요'],['선비봇','M','과거 준비 중이오'],['유모봇','F','우리 애기씨 건드리지 마시오']];
+const isBot=p=>p&&String(p.token).startsWith('bot-');
+function addBots(target){let i=0;while(G.players.length<target&&i<BOTS.length){const [n,g,it]=BOTS[i++];if(G.players.some(p=>p.name===n))continue;const p=addPlayer('bot-'+rid(6),n,it,g);p.online=true}
+  if(G.players.length>=6)G.cfg.mafia=Math.min(Math.max(1,maxMafia(G.players.length,G.cfg.gap)),Math.max(1,Math.round(G.players.length*.2)));hostSave();broadcast()}
+function removeBots(){G.players=G.players.filter(p=>!isBot(p));hostSave();broadcast()}
+/* ---- 테스트 장면 (연습판 전용) ---- */
+const SCENES=[['caught','⛓️ 자객 포박'],['wrong','😢 억울한 송치'],['wrongPolice','📜 어사 송치'],['tie','🤝 동점'],['night','💀 밤 습격'],['nightDoctor','🌿 의원 피습'],['saved','💉 의원이 살림'],['none','🌙 조용한 밤'],
+ ['m_fool','🗡️ 헛똑똑이 결말'],['m_wrong','🗡️ 멍석만 닳았다'],['m_perfect','🗡️ 무혈입성'],['m_last','🗡️ 홀로 남은 자객'],['c_win','🏮 종갓집 만세'],['c_fast','🏮 번갯불 콩'],['c_perfect','🏮 족집게'],['c_amhaeng','🏮 어사 출두'],['c_pyrrhic','🏮 막걸리 한 사발']];
+function testScene(k){const g=G;if(!g.players.some(p=>p.job)){g.players.forEach(p=>{p.alive=true});hostCmd({k:'start'})}
+  g.players.forEach(p=>p.alive=true);if(!g.round)g.round=1;g.stats=g.stats||{wrong:0,caught:0,mafia0:g.players.filter(p=>p.role==='M').length};
+  const by=f=>g.players.find(f)||g.players[0],mf=by(p=>p.role==='M'),ct=by(p=>p.job==='citizen'),po=by(p=>p.job==='police'),dc=by(p=>p.job==='doctor');
+  const votes={};g.players.forEach((p,i)=>votes[p.token]=g.players[(i+1)%g.players.length].token);
+  if(/^[mc]_/.test(k)){g.winner=k[0]==='m'?'M':'C';g.ending=k;g.phase='end';g.stats.wrong=k==='m_wrong'?3:0;
+    const M=g.players.filter(p=>p.role==='M'),C=g.players.filter(p=>p.role!=='M'&&p.token!==myToken).concat(g.players.filter(p=>p.role!=='M'&&p.token===myToken));
+    if(g.winner==='C'){M.forEach(p=>p.alive=false);if(k==='c_pyrrhic')C.slice(0,Math.max(0,C.length-3)).forEach(p=>p.alive=false);if(k==='c_amhaeng'||k==='c_pyrrhic'){const po=C.find(p=>p.job==='police');if(po){po.alive=true;if(k==='c_pyrrhic'){const x=C.find(p=>p.alive&&p!==po&&p.token!==myToken);if(x)x.alive=false}}}else C.filter(p=>p.job==='police').forEach(p=>p.alive=false)}
+    else{if(k==='m_last')M.slice(1).forEach(p=>p.alive=false);const mA=M.filter(p=>p.alive).length;C.slice(0,Math.max(0,C.length-mA)).forEach(p=>p.alive=false)}}
+  else if(['caught','wrong','wrongPolice','tie'].includes(k)){const v=k==='caught'?mf:k==='wrongPolice'?po:ct;const r={votes,cands:g.players.map(p=>p.token),dead:null,role:null,revote:false,noone:false};
+    if(k==='tie'){r.noone=true;r.head=hoe('tie')}else{v.alive=false;Object.assign(r,{dead:v.token,role:v.role,job:v.job,flavor:v.flavor,head:k==='caught'?hoeVote(v):k==='wrongPolice'?hoe('wrongPolice',v):hoe('wrong',v)});g.endAt=Date.now()+g.cfg.lastWords*1000}
+    g.result=r;g.phase='result'}
+  else{const v=k==='nightDoctor'?dc:ct;let dead=null,news,head;
+    if(k==='saved'){news=pick(NEWS_SAVED);head=hoe('saved')}else if(k==='none'){news=pick(NEWS_NONE);head=hoe('none')}
+    else{v.alive=false;dead=v.token;news=pick(NEWS_DEAD).replace('{n}',v.name);head=hoeNight(v)}
+    g.result={nightDead:dead,news,head,job:dead&&v.job,flavor:dead&&v.flavor};g.phase='morning'}
+  hostSave();broadcast();modal={result:'result',morning:'morning',end:'end'}[g.phase]||null;draw()}
+let botNext=0;
+function botTick(){if(!G||Date.now()<botNext)return;const bots=aliveP().filter(isBot);if(!bots.length)return;
+  if(G.phase==='vote'){const b=bots.find(b=>!(b.token in G.votes));if(!b)return;
+    let c=G.cands.filter(t=>t!==b.token);if(b.role==='M'){const cc=c.filter(t=>G.players.find(p=>p.token===t).role!=='M');if(cc.length)c=cc}
+    botNext=Date.now()+400+Math.random()*900;hostAct(b.token,{t:'vote',target:pick(c)})}
+  else if(G.phase==='night'){const N=G.night;const b=bots.find(b=>b.job==='mafia'?!(b.token in N.mafia):b.job==='police'?!N.police:b.job==='doctor'?!N.doctor:false);if(!b)return;
+    const al=aliveP();let c=b.job==='mafia'?al.filter(p=>p.role!=='M'):b.job==='police'?al.filter(p=>p!==b):al;
+    if(b.job==='mafia'){const prev=Object.values(N.mafia)[0];if(prev)c=c.filter(p=>p.token===prev).concat(c).slice(0,1)}
+    botNext=Date.now()+600+Math.random()*1200;hostAct(b.token,{t:'night',target:pick(c).token})}}
 function countVotes(){
   const cnt={};G.cands.forEach(t=>cnt[t]=0);Object.values(G.votes).forEach(t=>cnt[t]=(cnt[t]||0)+1);
   const mx=Math.max(...Object.values(cnt));const ties=G.cands.filter(t=>cnt[t]===mx);
@@ -611,11 +645,11 @@ function modalHtml(){const c=V&&V.cfg;
   case 'profile':return `<h2>✏️ 내 호패 정보</h2><label>내 이름</label><input id="nm" maxlength="12" value="${esc(LS.get('mafia-name')||'')}" placeholder="이름 (예: 김아씨, 박도령)">
     <label>성별 (신분 카드를 맞춰 드려요)</label><div class="gsel"><button type="button" data-g="F" class="${LS.get('mafia-gender')==='F'?'on':''}">👩 여 · 아씨</button><button type="button" data-g="M" class="${LS.get('mafia-gender')==='M'?'on':''}">👨 남 · 도령</button></div>
     <label>한마디 소개 (처음 만난 사이니까!)</label><input id="it" maxlength="30" value="${esc(LS.get('mafia-intro')||'')}" placeholder="예: 커피 없으면 못 사는 ENFP">
-    <div class="err">${esc(errMsg)}</div><button class="red" id="save-profile">${nextAct==='host'?'저장하고 고택 열기':nextAct==='join'?'저장하고 입장하기':'저장'}</button>`;
+    <div class="err">${esc(errMsg)}</div><button class="red" id="save-profile">${nextAct==='host'?'저장하고 고택 열기':nextAct==='practice'?'저장하고 연습 시작':nextAct==='join'?'저장하고 입장하기':'저장'}</button>`;
   case 'join':return `<h2>🚪 고택 입장</h2><label>고택 문패 (집사에게 받은 4자리 코드)</label><input id="cd" maxlength="4" style="text-transform:uppercase;letter-spacing:8px;font-size:26px;text-align:center" value="${esc(params.get('room')||'')}" placeholder="ABCD">
     <div class="muted" style="margin-top:8px">${esc(LS.get('mafia-name')||'')} ${LS.get('mafia-gender')==='F'?'👩':'👨'}(으)로 입장합니다</div><div class="err">${esc(errMsg)}</div><button class="red" id="jn">입장하기</button>`;
-  case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-settings','⚙️ 게임 설정')+btn('m-invite','📱 초대 (QR)'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${V?btn('quit','🚪 고택 나가기'):''}</div>
-    <div class="muted" style="margin-top:12px">소리는 집사 폰에서 크게 틀어두는 걸 추천해요(배경음악은 집사 폰만 기본으로 켜져요).<br>폰을 가로로 돌리면 화면이 크게 보여요. 화면 회전이 잠겨 있으면 자동으로 눕혀서 보여드려요.</div>`;
+  case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-settings','⚙️ 게임 설정')+btn('m-invite','📱 초대 (QR)')+btn('bots-add','🤖 컴퓨터 식구 채우기')+(V.players.some(p=>String(p.token).startsWith('bot-'))?btn('bots-del','🤖 컴퓨터 식구 내보내기'):''):''}${isHost&&V&&V.players.some(p=>String(p.token).startsWith('bot-'))?btn('m-test','🧪 테스트 장면 보기'):''}${!V?btn('go-practice','🤖 혼자 연습하기'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${V?btn('quit','🚪 고택 나가기'):''}</div>
+    <div class="muted" style="margin-top:12px">🤖 혼자 연습하기: 컴퓨터 식구 9명과 한 판을 돌려 화면을 미리 볼 수 있어요. 컴퓨터 식구는 지목과 밤 행동을 알아서 해요. 토론은 집사 버튼으로 바로 끝낼 수 있어요.<br>소리는 집사 폰에서 크게 틀어두는 걸 추천해요(배경음악은 집사 폰만 기본으로 켜져요).<br>폰을 가로로 돌리면 화면이 크게 보여요. 화면 회전이 잠겨 있으면 자동으로 눕혀서 보여드려요.</div>`;
   case 'rules':return `<h2>📜 놀이 방법</h2><div class="rules"><b>🎯 목표</b><br>🏮 종갓집: 숨어든 자객을 모두 관아로 송치하면 승리<br>🗡️ 자객패: 자객 수가 식구 수와 같아지면 승리<br><br>
     <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람은 관아로 송치되고 정체가 드러나요. 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 눈을 감고, 자객·암행어사·의원만 폰으로 몰래 움직여요.<br>6. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
     <b>🗡️ 자객 지원</b><br>대기실에서 몰래 지원하면 자객에 뽑힐 확률이 소폭 올라가요. 지원해서 자객이 된 뒤 이기면 🎁 기념품, 지면 생존자들에게 곤장!<br><br><b>🤐 약속</b><br>탈락한 사람은 말하지 않기. 남의 폰 훔쳐보지 않기.</div>`;
@@ -645,6 +679,7 @@ function modalHtml(){const c=V&&V.cfg;
     return `<h2>${p.gender==='F'?'👩':'👨'} ${esc(p.name)}</h2>${p.intro?`<div style="font-size:20px;margin:10px 0">“${esc(p.intro)}”</div>`:'<div class="muted">한마디 소개가 없어요</div>'}${!p.alive&&p.rev?revealHtml(p.rev.job,p.rev.flavor):''}${isHost&&V.phase==='lobby'&&p.token!==myToken?btn('kick','내보내기'):''}`}
   case 'card':return V.me&&V.me.role?`<div class="center" id="rolecard"><div class="muted">${esc(V.me.name)}님의 호패 · <b>누르고 있는 동안만</b> 보여요</div>${jobCard(V.me,peekRole)}${V.me.alive?'':'<div class="muted" style="margin-top:8px">💀 탈락했습니다 (관전만, 말하면 안 돼요!)</div>'}</div>`:'';
   case 'rtally':return V.result?`<h2>📊 ${V.round}일째 지목 현황</h2>${tallyHtml(V.result.tally,true)}`:'';
+  case 'test':return `<h2>🧪 테스트 장면 보기</h2><div class="muted">컴퓨터 식구가 있는 연습판에서만 보여요. 누르면 그 장면으로 바로 넘어갑니다.</div><h3>게임 중</h3><div class="mgrid">${SCENES.slice(0,8).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><h3>결말</h3><div class="mgrid">${SCENES.slice(8).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><button class="red" id="test-lobby" style="margin-top:14px">↩️ 대기실로 돌아가기</button>`;
   case 'chat':return `<h2>🤫 자객들의 밀담</h2>${chatHtml()}`;
   case 'tally':return `<h2>📊 지목 현황</h2>${V.tally?tallyHtml(V.tally):'<div class="muted">지목을 마쳐야 볼 수 있소</div>'}`;
   case 'result':{const r=V.result;if(!r)return '';
@@ -662,7 +697,10 @@ function keepForm(){const a=$('#nm'),b=$('#it'),c=$('#cd');if(a)LS.set('mafia-na
 function openM(m,arg){modal=m;modalArg=arg;errMsg=errMsg;draw();if(m==='invite'){const q=$('#qr');if(q&&window.QRCode){try{new QRCode(q,{text:location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':''),width:150,height:150})}catch(e){}}}}
 function bind(){
   const needProfile=()=>!LS.get('mafia-name')||!LS.get('mafia-gender');
-  const startHostFlow=()=>{modal=null;isHost=true;screen='game';draw();waitPeer(()=>{if(!LOCAL&&!window.Peer){errMsg='연결 라이브러리를 못 불러왔어요. 인터넷을 확인하세요';screen='home';isHost=false;return draw()}hostStart()})};
+  const startHostFlow=(practice)=>{modal=null;isHost=true;screen='game';draw();waitPeer(()=>{if(!LOCAL&&!window.Peer){errMsg='연결 라이브러리를 못 불러왔어요. 인터넷을 확인하세요';screen='home';isHost=false;return draw()}hostStart();if(practice===true){G.cfg.minutes=1;G.cfg.lastWords=10;addBots(10)}})};
+  on('#go-practice','click',()=>{errMsg='';if(needProfile()){nextAct='practice';return openM('profile')}startHostFlow(true)});
+  on('#m-test','click',()=>openM('test'));$$('[data-scene]').forEach(b=>b.onclick=()=>{modal=null;testScene(b.dataset.scene)});on('#test-lobby','click',()=>{modal=null;cmd('lobby')});
+  on('#bots-add','click',()=>{addBots(10);modal=null;draw()});on('#bots-del','click',()=>{removeBots();modal=null;draw()});
   on('#go-host','click',()=>{errMsg='';if(needProfile()){nextAct='host';return openM('profile')}startHostFlow()});
   on('#go-join','click',()=>{errMsg='';if(needProfile()){nextAct='join';return openM('profile')}openM('join')});
   on('#ppanel','click',()=>{if(!V){nextAct=null;openM('profile')}else if(V.me)openM('player',V.me.token)});
@@ -678,7 +716,7 @@ function bind(){
   on('#fs','click',()=>{const d=document.documentElement;try{(d.requestFullscreen||d.webkitRequestFullscreen).call(d);window.screen.orientation&&window.screen.orientation.lock&&window.screen.orientation.lock('landscape').catch(()=>{})}catch(e){}});
   $$('[data-g]').forEach(b=>b.onclick=()=>{keepForm();LS.set('mafia-gender',b.dataset.g);draw()});
   on('#save-profile','click',()=>{const n=$('#nm').value.trim();if(!n||!LS.get('mafia-gender')){errMsg='이름과 성별을 입력하세요';return draw()}LS.set('mafia-name',n);LS.set('mafia-intro',$('#it').value.trim());errMsg='';
-    if(nextAct==='host')return startHostFlow();if(nextAct==='join')return openM('join');modal=null;draw()});
+    if(nextAct==='host')return startHostFlow();if(nextAct==='practice')return startHostFlow(true);if(nextAct==='join')return openM('join');modal=null;draw()});
   on('#jn','click',()=>{const n=LS.get('mafia-name')||'',c=$('#cd').value.trim();if(c.length!==4){errMsg='4자리 문패 코드를 입력하세요';return draw()}modal=null;isHost=false;screen='game';waitPeer(()=>{if(!LOCAL&&!window.Peer){errMsg='연결 라이브러리를 못 불러왔어요. 인터넷을 확인하세요';screen='home';modal='join';return draw()}clientStart(c,n);draw()})});
   on('#home','click',()=>{LS.del('mafia-role');location.reload()});
   on('#quit','click',()=>{if(confirm('고택에서 나갈까요?')){LS.del('mafia-role');if(isHost)LS.del(HK);location.hash='';location.reload()}});
