@@ -160,11 +160,20 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .sbimg{display:block;width:130px;height:130px;border-radius:50%;object-fit:cover;margin:4px auto 6px;border:4px solid #5a3a1c;box-shadow:0 3px 8px rgba(0,0,0,.35)}
 .sbmini{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px;border:1.5px solid #5a3a1c}.sbmini.big{width:46px;height:46px;float:left;margin:0 10px 0 0}.sbmini.dead{filter:grayscale(1)}
 .dexs{overflow:hidden}.sp-frame.mf .face{object-position:center top;object-fit:cover}
+.hidden-dl{}#droot{position:absolute;left:50%;top:50%;width:1024px;height:559px;transform-origin:center;pointer-events:none;z-index:50}
+#droot.on{pointer-events:auto}.dl-dim{position:absolute;inset:0;background:rgba(10,6,2,.55)}
+.dl-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:440px;padding:22px 30px 20px;text-align:center;color:#1d140c;background:linear-gradient(#efe1bf,#f6ecd2 15%,#f6ecd2 85%,#efe1bf);box-shadow:0 14px 30px rgba(0,0,0,.6);animation:dlin .18s ease-out}
+.dl-box:before,.dl-box:after{content:"";position:absolute;left:-16px;right:-16px;height:20px;background:linear-gradient(180deg,#a87b4a,#6b4524 45%,#3e2713);border-radius:9px;box-shadow:0 3px 6px rgba(0,0,0,.5)}.dl-box:before{top:-10px}.dl-box:after{bottom:-10px}
+.dl-t{font-family:"Song Myung",serif;-webkit-text-stroke:.8px currentColor;font-size:28px;letter-spacing:3px;border-bottom:1.5px solid #b39a6e;padding-bottom:8px;margin-bottom:12px}
+.dl-face{width:84px;height:84px;margin:0 auto 10px;border-radius:50%;overflow:hidden;border:4px solid #5a3a1c;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.dl-m{font-family:"Song Myung",serif;-webkit-text-stroke:.5px currentColor;font-size:24px;line-height:1.4;word-break:keep-all}.dl-s{font-size:15px;color:#7a2a1c;margin-top:6px}
+.dl-b{display:flex;gap:12px;justify-content:center;margin-top:16px}.dl-b button{font-size:19px;padding:10px 22px;min-width:130px}
+@keyframes dlin{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
 </style>
 
 </head>
 <body>
-<div id="stage"></div><div id="mroot"></div>
+<div id="stage"></div><div id="mroot"></div><div id="droot"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js" onerror="this.remove();var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';document.head.appendChild(s)"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
@@ -497,8 +506,15 @@ function devicePortrait(){const sw=window.screen&&window.screen.width,sh=window.
 function fit(){const st=$('#stage'),mr=$('#mroot');if(!st)return;const rot=devicePortrait();const W=rot?Math.max(innerHeight,innerWidth):innerWidth,H=rot?Math.min(innerHeight,innerWidth):innerHeight;
   const s=Math.min(W/STAGE_W,H/STAGE_H);const tf=`translate(-50%,-50%) ${rot?'rotate(90deg) ':''}scale(${s})`;st.style.transform=tf;
   // 세로로 든 폰에서 글을 입력할 땐 창을 똑바로 세워서 키보드 방향과 맞춤
-  const upright=rot&&INPUT_MODALS.includes(modal);mr.className=upright?'upright':'';mr.style.transform=upright?'none':tf}
+  const upright=rot&&INPUT_MODALS.includes(modal);mr.className=upright?'upright':'';mr.style.transform=upright?'none':tf;const dr=$('#droot');if(dr)dr.style.transform=tf}
 addEventListener('resize',fit);
+/* ---- 게임 분위기 확인창 (브라우저 기본 창 대신) ---- */
+function askBox(o){if(typeof o==='string')o={msg:o};return new Promise(res=>{const d=$('#droot');
+  d.innerHTML=`<div class="dl-dim"></div><div class="dl-box"><div class="dl-t">${esc(o.title||'여쭙니다')}</div>${o.face?`<div class="dl-face">${o.face}</div>`:''}<div class="dl-m">${esc(o.msg)}</div>${o.sub?`<div class="dl-s">${esc(o.sub)}</div>`:''}
+  <div class="dl-b">${o.alert?'':`<button class="wood" id="dl-no">${esc(o.no||'물리기')}</button>`}<button class="red" id="dl-ok">${esc(o.ok||'그리하겠소')}</button></div></div>`;
+  d.classList.add('on');fit();const done=v=>{d.classList.remove('on');d.innerHTML='';res(v)};
+  $('#dl-ok').onclick=()=>done(true);const n=$('#dl-no');if(n)n.onclick=()=>done(false);$('.dl-dim').onclick=()=>done(false)})}
+const alertBox=(msg,title)=>askBox({msg,title:title||'알림',ok:'알겠소',alert:true});
 let triedLand=false;function goLandscape(){if(triedLand)return;triedLand=true;const d=document.documentElement;try{const r=(d.requestFullscreen||d.webkitRequestFullscreen);if(r){const pr=r.call(d);const lock=()=>{try{window.screen.orientation&&window.screen.orientation.lock&&window.screen.orientation.lock('landscape').catch(()=>{})}catch(e){}};if(pr&&pr.then)pr.then(lock).catch(()=>{});else lock()}}catch(e){}}
 document.addEventListener('pointerdown',goLandscape,{once:true,capture:true});addEventListener('orientationchange',()=>setTimeout(fit,200));
 
@@ -761,7 +777,7 @@ function bind(){
     if(nextAct==='host')return startHostFlow();if(nextAct==='practice')return startHostFlow(true);if(nextAct==='join')return openM('join');modal=null;draw()});
   on('#jn','click',()=>{const n=LS.get('mafia-name')||'',c=$('#cd').value.trim();if(c.length!==4){errMsg='4자리 문패 코드를 입력하세요';return draw()}modal=null;isHost=false;screen='game';waitPeer(()=>{if(!LOCAL&&!window.Peer){errMsg='연결 라이브러리를 못 불러왔어요. 인터넷을 확인하세요';screen='home';modal='join';return draw()}clientStart(c,n);draw()})});
   on('#home','click',()=>{LS.del('mafia-role');location.reload()});
-  on('#quit','click',()=>{if(confirm('고택에서 나갈까요?')){LS.del('mafia-role');if(isHost)LS.del(HK);location.hash='';location.reload()}});
+  on('#quit','click',async()=>{if(await askBox({title:'고택 나가기',msg:'고택에서 나가시겠소?',sub:isHost?'집사가 나가면 이번 판이 끝납니다.':'',ok:'나가겠소',no:'머무르기'})){LS.del('mafia-role');if(isHost)LS.del(HK);location.hash='';location.reload()}});
   on('#leave','click',()=>{act({t:'leave'});LS.del('mafia-role');location.hash='';setTimeout(()=>location.reload(),300)});
   on('#kick','click',()=>{cmd('kick',modalArg);modal=null;draw()});
   $$('[data-c]').forEach(b=>b.onclick=()=>{const k=b.dataset.c,d=+b.dataset.d,c=G.cfg,n=G.players.length;const lim={mafia:[1,Math.max(1,maxMafia(n,c.gap))],gap:[0,10],minutes:[.5,60],lastWords:[0,120],applyW:[1,2],gonjang:[1,10]}[k];
@@ -771,13 +787,13 @@ function bind(){
   on('#hp','change',e=>cmd('cfg',{hostPlays:e.target.checked}));
   on('#apply','click',()=>act({t:'apply',on:!V.me.apply}));
   on('#start','click',()=>cmd('start'));on('#day','click',()=>cmd('day'));on('#vote','click',()=>cmd('vote'));
-  on('#plus','click',()=>cmd('plus'));on('#endvote','click',()=>{if(confirm('아직 지목 안 한 사람이 있어도 개표할까요?'))cmd('endvote')});
-  on('#next','click',()=>cmd('next'));on('#endnight','click',()=>{if(confirm('밤 행동을 기다리지 않고 밤을 끝낼까요?'))cmd('endnight')});
+  on('#plus','click',()=>cmd('plus'));on('#endvote','click',async()=>{if(await askBox({title:'개표',msg:'아직 지목하지 않은 식구가 있어도 개표하시겠소?',ok:'개표하오',no:'더 기다리기'}))cmd('endvote')});
+  on('#next','click',()=>cmd('next'));on('#endnight','click',async()=>{if(await askBox({title:'닭 울리기',msg:'밤 행동을 다 기다리지 않고 날을 밝히시겠소?',ok:'날을 밝히오',no:'더 기다리기'}))cmd('endnight')});
   on('#lobby','click',()=>cmd('lobby'));
   on('#savecard','click',()=>saveCard());
-  on('#share','click',()=>{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');if(navigator.share)navigator.share({title:'종갓집 자객 소동',text:'고택 문패 '+V.code,url:link}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>alert('링크를 복사했어요'))});
+  on('#share','click',()=>{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');if(navigator.share)navigator.share({title:'종갓집 자객 소동',text:'고택 문패 '+V.code,url:link}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>alertBox('초대 링크를 복사했소. 단톡방에 붙여 넣으시오.','초대장'))});
   $$('[data-slot]').forEach(b=>b.onclick=()=>{const t=b.dataset.slot;if(selectable().includes(t)){voteSel=t;return draw()}openM('player',t)});
-  on('#sub','click',()=>{if(!voteSel)return;if(!confirm(`${pn(voteSel)}님을 지목하시겠소? 되돌릴 수 없습니다.`))return;act({t:'vote',target:voteSel});sfx('stamp');voteSel=null});
+  on('#sub','click',async()=>{if(!voteSel)return;const tp=V.players.find(p=>p.token===voteSel);if(!await askBox({title:'멍석말이 지목',face:tp?faceImg(tp):'',msg:`${pn(voteSel)}님을 지목하시겠소?`,sub:'한 번 찍은 도장은 되돌릴 수 없소.',ok:'도장 찍기',no:'다시 생각하기'}))return;if(!voteSel)return;act({t:'vote',target:voteSel});sfx('stamp');voteSel=null});
   const sendChat=()=>{const i=$('#chatin');if(i&&i.value.trim()){act({t:'chat',text:i.value});i.value=''}};on('#chatsend','click',sendChat);on('#chatin','keydown',e=>{if(e.key==='Enter')sendChat()});
   on('#nsub','click',()=>{if(!voteSel)return;act({t:'night',target:voteSel});sfx('moktak');voteSel=null});
   const rc=$('.jobcard');if(rc){const showR=e=>{e.preventDefault();if(!peekRole){peekRole=true;draw()}},hideR=()=>{if(peekRole){peekRole=false;draw()}};
