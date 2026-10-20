@@ -630,7 +630,7 @@ function cornerLLabel(){if(!inGameNow())return '📖 직업 도감';return '📜
 function inGameNow(){return screen!=='home'&&V}
 function profilePanel(){const nm=V&&V.me?V.me.name:LS.get('mafia-name'),gd=LS.get('mafia-gender');
   return `<div class="wood ppanel" id="ppanel"><div class="prow"><span class="pava">${V&&V.me?faceImg(V.me):gd?`<img class="face" src="${avatarSvg(gd,0)}" alt="">`:'🙂'}</span><div><div class="pname">${nm?esc(nm):'호패 만들기'}</div>
-  <div class="psub">${V?`고택 ${esc(V.code)}${isHost?' · 집사':''} <span class="dot ${netOK?'':'bad'}"></span>`:(LS.get('mafia-intro')?'“'+esc(LS.get('mafia-intro'))+'”':'눌러서 이름·성별 정하기')}</div></div></div></div>`}
+  <div class="psub">${V?`입장 코드 ${esc(V.code)}${isHost?' · 집사':''} <span class="dot ${netOK?'':'bad'}"></span>`:(LS.get('mafia-intro')?'“'+esc(LS.get('mafia-intro'))+'”':'눌러서 이름·성별 정하기')}</div></div></div></div>`}
 function logPanel(){let lines=[];
   if(!V)lines=[['sys','밀양 종가고택에 자객이 숨어들었다…'],['sys','집사가 고택을 열면 문패 코드로 입장하세요'],['sys','폰을 가로로 돌리면 더 크게 보여요']];
   else{(V.log||[]).forEach(l=>lines.push([/승리/.test(l)?'end':/밤/.test(l)?'night':'gong',l]));
