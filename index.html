@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>종갓집 자객 소동</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#0c0b0f;font-family:"Gowun Dodum",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
@@ -14,14 +14,15 @@ input{-webkit-user-select:text;user-select:text}
 #stage:after{content:"";position:absolute;inset:0;background:rgba(5,8,25,0);pointer-events:none;transition:background .8s;z-index:1}
 #stage.night:after{background:rgba(5,8,25,.42)}
 #stage>*{z-index:2}
-h2,h3,.big,.code,button,.pname,.hud,.hud2,.jname{font-family:"Gowun Batang",serif}
+h2,h3,.big,.code,button,.pname,.hud,.hud2,.jname,.sname,.jemo+.jname,.btxt,.logbox b,.sign{font-family:"궁서","궁서체","Gungsuh","GungSeo","Song Myung","Gowun Batang",serif;font-weight:400!important}
+.paper,.logbox,.btxt,.sst,.psub{font-family:"Gowun Batang",serif}
 button{border:0;cursor:pointer;font-weight:700;color:#fbecc9;border-radius:6px;font-size:17px;padding:8px 14px}
 button:disabled{opacity:.45}
 .wood{background:linear-gradient(#93673d,#6b4524);border:2px solid #3e2713;color:#fbecc9;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 3px 6px rgba(0,0,0,.5);border-radius:6px}
 button.red{background:linear-gradient(#b8432f,#87271c);border:2px solid #4a120c;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 3px 6px rgba(0,0,0,.5)}
 button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 3px 6px rgba(0,0,0,.5)}
 .dark{background:rgba(18,14,10,.78);border:1px solid rgba(255,225,170,.28);border-radius:8px;color:#f3e6c8}
-.sign{position:absolute;left:354px;top:25px;width:316px;height:118px;border-radius:5px;background:linear-gradient(180deg,#c49a63 0%,#b0834d 45%,#a47744 100%);border:3px solid #4a2e14;box-shadow:inset 0 0 0 2px rgba(255,235,190,.35),inset 0 -6px 10px rgba(60,30,10,.35),0 4px 8px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#24160a;font-family:"Gowun Batang",serif;pointer-events:none}
+.sign{position:absolute;left:354px;top:25px;width:316px;height:118px;border-radius:5px;background:linear-gradient(180deg,#c49a63 0%,#b0834d 45%,#a47744 100%);border:3px solid #4a2e14;box-shadow:inset 0 0 0 2px rgba(255,235,190,.35),inset 0 -6px 10px rgba(60,30,10,.35),0 4px 8px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#24160a;pointer-events:none}
 .sign:before,.sign:after{content:"";position:absolute;top:8px;width:7px;height:7px;border-radius:50%;background:#3b250f}.sign:before{left:9px}.sign:after{right:9px}
 .sign .s1{font-size:21px;font-weight:700;letter-spacing:1px}.sign .s2{font-size:36px;font-weight:700;letter-spacing:1px;line-height:1.15;text-shadow:0 1px 0 rgba(255,230,180,.5)}
 .ppanel{position:absolute;left:12px;top:10px;width:212px;padding:8px 10px;cursor:pointer}
