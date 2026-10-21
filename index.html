@@ -352,21 +352,21 @@ function hostCmd(c){ // 방장 화면 버튼
   if(c.k==='lobby'){g.phase='lobby';g.players.forEach(p=>{p.role=null;p.alive=true});g.winner=null}
   hostSave();broadcast();
 }
-const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_dolsoe:'img/gemini/j_dolsoe.jpg',j_jumo:'img/gemini/j_jumo.jpg',j_ijang:'img/gemini/j_ijang.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
+const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_dolsoe:'img/gemini/j_dolsoe.jpg',j_jumo:'img/gemini/j_jumo.jpg',j_ijang:'img/gemini/j_ijang.jpg',j_ijang_F:'img/gemini/j_ijang_F.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
 
 const FPOOL={M:['M0','M00','M000','M1','M2','M3','M4','M5','M6'],F:['F0','F1','F2','F3','F4','F5','F6']};
 const JART={mafia:'j_mafia',police:'j_podo',doctor:'j_ijang'};
 const SBART={'종부 마님':'img/sinbun/종부_마님.jpg','막내 아씨':'img/sinbun/막내_아씨.jpg','이웃집 할매':'img/sinbun/이웃집_할매.jpg','하산한 비구니':'img/sinbun/하산한_비구니.jpg','주막 주모':'img/sinbun/주막_주모.jpg','빨래터 아낙':'img/sinbun/빨래터_아낙.jpg','닭 치는 과부':'img/sinbun/닭_치는_과부.jpg','김매는 아낙':'img/sinbun/김매는_아낙.jpg','훈장님':'img/sinbun/훈장님.jpg','이장님':'img/sinbun/이장님.jpg','사랑채 할배':'img/sinbun/사랑채_할배.jpg','한량':'img/sinbun/한량.jpg','떠돌이 소리꾼':'img/sinbun/떠돌이_소리꾼.jpg','돌쇠':'img/sinbun/돌쇠.jpg','소작농':'img/sinbun/소작농.jpg','엿장수':'img/sinbun/엿장수.jpg','낙방한 선비':'img/sinbun/낙방한_선비.jpg'};
 const SBF=["종부 마님", "막내 아씨", "이웃집 할매", "하산한 비구니", "주막 주모", "빨래터 아낙", "닭 치는 과부", "김매는 아낙"],SBM=["훈장님", "이장님", "사랑채 할배", "한량", "떠돌이 소리꾼", "돌쇠", "소작농", "엿장수", "낙방한 선비"];
 function sbKey(f){return f&&f.n?f.n.split(' ').slice(1).join(' '):''}
-function idSrc(job,f){if(job==='mafia')return G2.j_mafia;if(job==='citizen'&&f&&SBART[sbKey(f)])return SBART[sbKey(f)];const k=JART[job];return k?G2[k]:null}
+function idSrc(job,f,g){if(job==='mafia')return G2.j_mafia;if(job==='doctor'&&g==='F')return G2.j_ijang_F;if(job==='citizen'&&f&&SBART[sbKey(f)])return SBART[sbKey(f)];const k=JART[job];return k?G2[k]:null}
 /* 대기실·진행 중 얼굴: 삿갓·쓰개치마로 얼굴을 가린 식구 (옷 색으로 구분) */
 function avatarSvg(g,i){return `img/avatar/${g==='F'?'F':'M'}${i%8+1}.svg`}
 function faceIdx(p){const ps=(V&&V.players)||[];const same=ps.filter(x=>(x.gender||'M')===(p.gender||'M'));const i=same.findIndex(x=>x.token===p.token);return (i<0?0:i)+1}
-function faceSrc(p){if(p.rev){const r=idSrc(p.rev.job,p.rev.flavor);if(r&&p.rev.job!=='mafia')return r}const ps=(V&&V.players)||[],k=ps.findIndex(x=>x.token===p.token);return avatarSvg(p.gender==='F'?'F':'M',k<0?0:k)}
+function faceSrc(p){if(p.rev){const r=idSrc(p.rev.job,p.rev.flavor,p.gender);if(r&&p.rev.job!=='mafia')return r}const ps=(V&&V.players)||[],k=ps.findIndex(x=>x.token===p.token);return avatarSvg(p.gender==='F'?'F':'M',k<0?0:k)}
 function faceImg(p,cls){return `<img class="face ${cls||''}" src="${faceSrc(p)}" alt="">`}
 /* ---- 호외(탈락 순간 익살 헤드라인) ---- */
-const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
+const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
 
 const HOE={
  caught:['멍석말이 대성공! 자객 {n}, 관아로 직행','{n}의 가면이 벗겨지다! 고택 식구들 덩실덩실','눈치 백단 종갓집, 자객 {n}을 콕 집어내다','어설픈 연기 들통! {n}, 끌려가며 "억울하오" 연발','자객 {n}, 숨긴 단검이 소맷자락에서 툭!'],
@@ -469,7 +469,7 @@ function viewFor(tok){
   if(p&&p.role==='M')v.chat=g.chat.slice(-40);
   if(g.phase==='result'&&g.result.dead)v.lastWords=g.cfg.lastWords;
   if(g.phase==='morning'){v.nightDead=g.result.nightDead&&pname(g.result.nightDead);v.nightTok=g.result.nightDead;v.news=g.result.news;v.head=g.result.head;v.deadJob=g.result.job;v.deadFlavor=g.result.flavor}
-  if(g.phase==='end'){v.winner=g.winner;v.ending=g.ending||(g.winner==='M'?'m_fool':'c_win');v.pobak=g.pobak||'';v.stats=g.stats||null;v.roles=g.players.map(x=>({name:x.name,role:x.role,job:x.job,flavor:x.flavor,alive:x.alive,apply:!!x.apply}))}
+  if(g.phase==='end'){v.winner=g.winner;v.ending=g.ending||(g.winner==='M'?'m_fool':'c_win');v.pobak=g.pobak||'';v.stats=g.stats||null;v.roles=g.players.map(x=>({name:x.name,role:x.role,job:x.job,flavor:x.flavor,alive:x.alive,apply:!!x.apply,gender:x.gender}))}
   return v;
 }
 function tally(votes,cands){const c={};cands.forEach(t=>c[t]=0);Object.values(votes).forEach(t=>c[t]=(c[t]||0)+1);return Object.entries(c).map(([t,n])=>({name:pname(t),n})).sort((a,b)=>b.n-a.n)}
@@ -532,9 +532,9 @@ function tallyHtml(t,mark){const tot=t.reduce((a,b)=>a+b.n,0)||1;const mx=Math.m
 function jobCard(me,show){if(!show)return `<div class="jobcard jback"><div class="jteam">號牌</div><div class="jemo">📜</div><div class="jname">호패</div><div class="jab">손가락으로 누르고 있는 동안만 보여요.<br>옆사람이 못 보게 가리고 확인하세요!</div></div>`;const J=JOBS[me.job]||JOBS.citizen,m=me.role==='M',f=me.flavor;
   let main;
   if(me.job==='citizen'&&f)main=`${SBART[sbKey(f)]?`<img class="sbimg" src="${SBART[sbKey(f)]}" alt="">`:`<div class="jemo">${f.n.split(' ')[0]}</div>`}<div class="jname">${esc(f.n.split(' ').slice(1).join(' '))}</div><div class="jflav">🏮 종갓집 편</div><div class="jab">${esc(f.d)}<br><br>${J.ability}</div>`;
-  else main=`${jart(me.job)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div>${m&&f?`<div class="jflav">${SBART[sbKey(f)]?`<img class="sbmini" src="${SBART[sbKey(f)]}" alt="">`:''}위장 신분: ${esc(f.n)}</div>`:''}<div class="jab">${J.ability}${m&&f?`<br><br>🎭 들키면 이렇게 둘러대세요: “${esc(f.d)}”`:''}</div>`;
+  else main=`${jart(me.job,me.gender)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div>${m&&f?`<div class="jflav">${SBART[sbKey(f)]?`<img class="sbmini" src="${SBART[sbKey(f)]}" alt="">`:''}위장 신분: ${esc(f.n)}</div>`:''}<div class="jab">${J.ability}${m&&f?`<br><br>🎭 들키면 이렇게 둘러대세요: “${esc(f.d)}”`:''}</div>`;
   return `<div class="jobcard ${m?'jm':'jc'} ${show?'':'hide-role'}"><div class="jteam">${m?'刺客 · 자객패':'宗家 · 종갓집'}</div>${main}${me.job==='soldier'?`<div class="jflav">남은 방패: ${me.armor?'🛡️ 1':'없음'}</div>`:''}${m&&show?`<div class="jflav">동료 자객: ${V.mates.map(esc).join(', ')||'없음'}</div>`:''}</div>`}
-function jart(job,g){const k=JART[job]||(job==='citizen'?(g==='F'?'j_jumo':'j_dolsoe'):null);return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
+function jart(job,g){const k=(job==='doctor'&&g==='F'?'j_ijang_F':0)||JART[job]||(job==='citizen'?(g==='F'?'j_jumo':'j_dolsoe'):null);return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
 function revealHtml(job,f){const J=JOBS[job]||JOBS.citizen;
   if(job==='mafia')return `<div class="reveal">정체는 🗡️ <b>자객</b>${f?` · ${esc(f.n)}(으)로 위장하고 있었습니다`:''}</div>`;
   if(job==='citizen'&&f)return `<div class="reveal"><b>${esc(f.n)}</b><br><span class="muted">${esc(f.d)}</span></div>`;
@@ -610,7 +610,7 @@ function spreadHtml(){
   const P=tok&&V.players.find(p=>p.token===tok);const J=JOBS[job]||JOBS.citizen;
   const ident=!P?'':job==='mafia'?`🗡️ 자객${flavor?` (${esc(flavor.n)} 행세)`:''}`:job==='citizen'&&flavor?esc(flavor.n):`${J.emo} ${J.name}`;
   const desc=!P?'':job==='citizen'&&flavor?esc(flavor.d):job==='mafia'&&flavor?`“${esc(flavor.d)}” 라며 둘러댔다`:'';
-  const body=P?`<div class="sp-prof"><div class="sp-frame ${job==='mafia'?'mf':''}">${idSrc(job,flavor)?`<img class="face" src="${idSrc(job,flavor)}" alt="">`:faceImg(P)}</div><div class="sp-info">
+  const body=P?`<div class="sp-prof"><div class="sp-frame ${job==='mafia'?'mf':''}">${idSrc(job,flavor,P.gender)?`<img class="face" src="${idSrc(job,flavor,P.gender)}" alt="">`:faceImg(P)}</div><div class="sp-info">
       <div><b>이름</b> : ${esc(P.name)}</div><div><b>정체</b> : <span class="${job==='mafia'?'srd':'sbl'}">${ident}</span></div>
       ${P.intro?`<div><b>한마디</b> : “${esc(P.intro)}”</div>`:''}${desc?`<div class="sp-desc">${desc}</div>`:''}${news?`<div class="sp-desc">🐓 ${esc(news)}</div>`:''}</div></div>`
     :modal==='result'?`<div class="sp-tally">${tallyHtml(V.result.tally,true)}</div>`:`<div class="sp-news">🐓 ${esc(news)}</div>`;
@@ -741,7 +741,7 @@ function modalHtml(){const c=V&&V.cfg;
     ${V.lastWords?`<div class="muted" style="margin-top:8px">🕯️ ${esc(r.deadName)}님의 마지막 한마디</div><div class="big tm"></div>`:''}</div>${tallyHtml(r.tally,true)}`}
   case 'morning':return `<h2 class="center">🐓 닭이 울었습니다</h2>${hoeHtml(V.head,!!V.nightDead)}<div class="center">${V.nightDead?`<div class="big">💀 ${esc(V.nightDead)}</div>`:'<div class="big">☀️</div>'}<div style="font-size:19px;line-height:1.6">${esc(V.news||'')}</div>${V.nightDead?revealHtml(V.deadJob,V.deadFlavor):''}</div>`;
   case 'end':return `<div class="center"><div class="big ${V.winner==='M'?'rd':'bl'}">${V.winner==='M'?'🗡️ 자객패 승리':'🏮 종갓집 승리'}</div><div class="muted">${V.winner==='M'?'고택이 도적떼의 손에 넘어갔습니다!':'고택의 평화가 돌아왔습니다!'}</div></div>${photoCardHtml()}
-    ${verdictHtml()}<h3>📜 호패 공개</h3>${V.roles.map(p=>{const J=JOBS[p.job]||JOBS.citizen,f=p.flavor;return `<div class="dexrow dexs">${idSrc(p.job,f)?`<img class="sbmini big ${p.alive?'':'dead'}" src="${idSrc(p.job,f)}" alt="">`:''}${p.alive?'':'💀 '}<b>${esc(p.name)}</b> — <b class="${p.role==='M'?'rd':'bl'}">${p.job==='citizen'&&f?esc(f.n):J.emo+' '+J.name}</b>${p.job==='mafia'&&f?` <span class="muted">(${esc(f.n)} 행세)</span>`:''}${p.job==='citizen'&&f?`<div class="muted">${esc(f.d)}</div>`:''}</div>`}).join('')}`;
+    ${verdictHtml()}<h3>📜 호패 공개</h3>${V.roles.map(p=>{const J=JOBS[p.job]||JOBS.citizen,f=p.flavor;return `<div class="dexrow dexs">${idSrc(p.job,f,p.gender)?`<img class="sbmini big ${p.alive?'':'dead'}" src="${idSrc(p.job,f,p.gender)}" alt="">`:''}${p.alive?'':'💀 '}<b>${esc(p.name)}</b> — <b class="${p.role==='M'?'rd':'bl'}">${p.job==='citizen'&&f?esc(f.n):J.emo+' '+J.name}</b>${p.job==='mafia'&&f?` <span class="muted">(${esc(f.n)} 행세)</span>`:''}${p.job==='citizen'&&f?`<div class="muted">${esc(f.d)}</div>`:''}</div>`}).join('')}`;
   }
   return ''}
 
