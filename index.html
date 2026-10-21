@@ -232,9 +232,8 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 #rolecard .jobcard>*{grid-column:2}#rolecard .jobcard>.jart,#rolecard .jobcard>.sbimg,#rolecard .jobcard>.jemo{grid-column:1;grid-row:1/span 8;margin:0}
 #rolecard .jobcard>.jart{float:none;height:230px;width:auto;max-width:200px}#rolecard .jobcard>.sbimg{width:170px;height:170px}#rolecard .jobcard>.jemo{font-size:80px;padding:0 10px}
 #rolecard .jobcard.jback{display:block;text-align:center}#rolecard .jback .jab{margin-top:14px}#rolecard .jname{font-size:30px}#rolecard .jab{font-size:14px;line-height:1.5}
-.bigres{position:absolute;left:50%;transform:translateX(-50%);top:258px;padding:10px 30px 12px;text-align:center;white-space:nowrap;border-radius:10px;animation:brIn .5s ease-out}
+.bigres{position:absolute;left:50%;transform:translateX(-50%);top:258px;padding:10px 30px 12px;text-align:center;white-space:nowrap;border-radius:10px}
 .br-n{font-family:"Song Myung",serif;font-size:40px;line-height:1.1;color:#fff3dc;-webkit-text-stroke:.8px currentColor}.br-v{font-size:24px;font-weight:700;margin-top:4px;color:#f3e6c8}.bigres .rd{color:#ff7b6b}.bigres .bl{color:#8fc8ff}
-@keyframes brIn{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
 .qk{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}.qb{background:#f6ead0;border:1.5px solid #8b6a43;border-radius:16px;padding:5px 11px;font:inherit;font-size:14px;color:#3b2a1a;cursor:pointer}.qb:active{background:#e5d1a6}.qn{border-color:#8a1f1f;color:#8a1f1f}.qt{font-size:13px;color:#7a6851;margin-right:2px}
 .cnote{max-width:600px;white-space:normal}.cnote .br-n{font-size:34px}.cnote .br-v{font-size:19px;word-break:keep-all}#bbox.ig .btxt{display:none}
 .cpanel{position:absolute;left:204px;top:246px;width:618px;height:196px;padding:6px 10px;display:flex;flex-direction:column;gap:2px;text-align:left}
@@ -832,7 +831,7 @@ function modalHtml(){const c=V&&V.cfg;
     <b>🗡️ 자객 지원</b><br>대기실에서 몰래 지원하면 자객에 뽑힐 확률이 소폭 올라가요. 지원해서 자객이 된 뒤 이기면 🎁 기념품, 지면 30분간 포박!<br><br><b>🤐 약속</b><br>탈락한 사람은 말하지 않기. 남의 폰 훔쳐보지 않기.</div>`;
   case 'dex':{const row=x=>`<div class="dexrow dexs">${SBART[x[0].split(' ').slice(1).join(' ')]?`<img class="sbmini big" src="${SBART[x[0].split(' ').slice(1).join(' ')]}" alt="">`:''}<b>${esc(x[0])}</b><div class="muted">${esc(x[1])}</div></div>`;
     return `<h2>📖 직업 도감</h2><h3>고정 직업</h3>${['mafia','police','doctor','soldier'].map(k=>{const J=JOBS[k],src=idSrc(k);return `<div class="dexrow dexs">${src?`<img class="sbmini big" style="object-position:center 12%" src="${src}" alt="">`:''}<b class="${J.team==='M'?'rd':'bl'}">${J.emo} ${J.name}</b> <span class="muted">${TEAM[J.team]}</span><div class="muted">${J.ability}</div></div>`}).join('')}
-    <h3>👩 아씨들의 신분 (${SINBUN.F.length})</h3>${SINBUN.F.map(row).join('')}<h3>👨 도령들의 신분 (${SINBUN.M.length})</h3>${SINBUN.M.map(row).join('')}<div class="muted center" style="margin-top:8px">🎭 자객은 그 판에 아무도 받지 않은 신분 중 하나로 위장할 수 있어요</div>`}
+    <h3>👩 아씨들의 신분 (${SINBUN.F.length})</h3>${SINBUN.F.map(row).join('')}<h3>👨 도령들의 신분 (${SINBUN.M.length})</h3>${SINBUN.M.map(row).join('')}`}
   case 'invite':{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');
     return `<h2>📱 식구 초대</h2><div class="center"><div class="muted">고택 문패</div><div class="code">${esc(V.code)}</div><div id="qr"></div><div class="muted" style="word-break:break-all">${esc(link)}</div>${btn('share','🔗 링크 공유/복사')}</div>`}
   case 'settings':{const n=V.players.length,mx=maxMafia(n,c.gap);const st=(k,v)=>`<div class="step"><button class="wood" data-c="${k}" data-d="-1">−</button><b>${v}</b><button class="wood" data-c="${k}" data-d="1">+</button></div>`;
