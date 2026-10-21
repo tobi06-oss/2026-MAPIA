@@ -367,7 +367,7 @@ function faceIdx(p){const ps=(V&&V.players)||[];const same=ps.filter(x=>(x.gende
 function faceSrc(p){if(p.rev){const r=idSrc(p.rev.job,p.rev.flavor,p.gender);if(r&&p.rev.job!=='mafia')return r}const ps=(V&&V.players)||[],k=ps.findIndex(x=>x.token===p.token);return avatarSvg(p.gender==='F'?'F':'M',k<0?0:k)}
 function faceImg(p,cls){return `<img class="face ${cls||''}" src="${faceSrc(p)}" alt="">`}
 /* ---- 호외(탈락 순간 익살 헤드라인) ---- */
-const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
+const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_perfect:'img/hoe/c_perfect.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
 
 const HOE={
  caught:['멍석말이 대성공! 자객 {n}, 관아로 직행','{n}의 가면이 벗겨지다! 고택 식구들 덩실덩실','눈치 백단 종갓집, 자객 {n}을 콕 집어내다','어설픈 연기 들통! {n}, 끌려가며 "억울하오" 연발','자객 {n}, 숨긴 단검이 소맷자락에서 툭!'],
@@ -560,7 +560,7 @@ const ENDINGS={
 const PC_DATE='2026. 11. 8 · 밀양 종가고택';
 function stageBg(){const st=$('#stage');const m=st&&getComputedStyle(st).backgroundImage.match(/url\("?(.*?)"?\)$/);return m?m[1]:''}
 ART.m_perfect=G2.e_perfect;
-const END_FB={m_fool:'m_wrong',m_perfect:'m_last',c_perfect:'c_fast',c_amhaeng:'h_police'};
+const END_FB={m_fool:'m_wrong',m_perfect:'m_last',c_amhaeng:'h_police'};
 function endArt(k){return ART[k]||ART[END_FB[k]]||null}
 function endInfo(){const E0=ENDINGS[V.ending]||ENDINGS[V.winner==='M'?'m_fool':'c_win'],w=V.stats?V.stats.wrong:0,E={...E0,t:E0.t.replace('{w}',w)};const ms=V.roles.filter(p=>p.role==='M').map(p=>p.name);return {...E,key:V.ending,ms,alive:V.roles.filter(p=>p.alive).length}}
 function photoCardHtml(){const E=endInfo(),m=V.winner==='M';
