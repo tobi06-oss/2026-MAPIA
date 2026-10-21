@@ -485,8 +485,9 @@ function hostCmd(c){ // 방장 화면 버튼
     const used=new Set();
     const draw1=(gender,low)=>{const pool=gender==='F'?SINBUN.F:gender==='M'?SINBUN.M:SINBUN.F.concat(SINBUN.M);
       let c=shuffle(pool.filter(x=>!used.has(x[0])&&(!low||x[2])));if(!c.length)c=shuffle(pool.filter(x=>!used.has(x[0])));const x=c[0];if(!x)return null;used.add(x[0]);return{n:x[0],d:x[1]}};
-    g.players.forEach((p,i)=>{p.job=jobs[i];p.role=JOBS[p.job].team;p.alive=true;p.armor=0;p.flavor=null});
+    g.players.forEach((p,i)=>{p.job=jobs[i];p.role=JOBS[p.job].team;p.alive=true;p.armor=0;p.flavor=null;delete p.cover});
     g.players.filter(p=>p.job==='citizen').forEach(p=>p.flavor=draw1(p.gender,false));
+    g.players.filter(p=>p.job==='police'||p.job==='soldier').forEach(p=>p.cover=draw1(p.gender,false)); // 특수직업도 첫날 소개용 위장 신분
     const held=new Set(used);
     g.players.filter(p=>p.job==='mafia').forEach(p=>{p.flavor=draw1(p.gender,false);const pool=p.gender==='F'?SINBUN.F:p.gender==='M'?SINBUN.M:SINBUN.F.concat(SINBUN.M);p.covers=pool.filter(x=>!held.has(x[0])).map(x=>x[0])});
     g.round=0;g.outN=0;g.gid=rid(6);g.players.forEach(x=>{delete x.out});g.log=[];g.chat=[];g.ghost=[];g.daySus=null;g.winner=null;g.ending=null;g.stats={wrong:0,caught:0,mafia0:g.players.filter(x=>x.role==='M').length,pol:{},save:{},pick:{}};g.gameNo=(g.record||[]).length+1;g.phase='roles';}
@@ -634,7 +635,7 @@ function viewFor(tok){
   const v={phase:g.phase,code:g.code,gid:g.gid||'',round:g.round,gameNo:g.gameNo||1,record:(g.record||[]).slice(-30),cfg:tok===myToken?g.cfg:Object.assign({},g.cfg,{mafiaPick:[]}),log:g.log,
     players:g.players.map(x=>({token:x.token,name:x.name,intro:x.intro||'',gender:x.gender||'',rev:!x.alive&&x.job?(g.phase==='end'||x.job==='mafia'?{job:x.job,flavor:x.flavor}:{job:'citizen',flavor:null}):null,alive:x.alive,online:x.token===myToken||!!x.online})),
     votedTokens:g.phase==='vote'?Object.keys(g.votes):null,mafiaLeft:g.phase==='lobby'?null:cntRole('M'),
-    me:p?{token:p.token,name:p.name,gender:p.gender,role:p.role,job:p.job,flavor:p.flavor,armor:p.armor,alive:p.alive,covers:p.covers||null,apply:!!p.apply}:null,applicants:g.players.filter(x=>x.apply).length,remain:Math.max(0,g.endAt-Date.now())};
+    me:p?{token:p.token,name:p.name,gender:p.gender,role:p.role,job:p.job,flavor:p.flavor,cover:p.cover||null,armor:p.armor,alive:p.alive,covers:p.covers||null,apply:!!p.apply}:null,applicants:g.players.filter(x=>x.apply).length,remain:Math.max(0,g.endAt-Date.now())};
   if(p&&p.role==='M')v.mates=g.players.filter(x=>x.role==='M'&&x!==p).map(x=>x.name);
   if(g.phase==='vote'){v.cands=g.cands;v.revote=g.revote;v.voted=Object.keys(g.votes).length;v.voters=aliveP().length;
     v.myVote=p?g.votes[tok]:undefined;if(v.myVote!==undefined)v.tally=tally(g.votes,g.cands)}
@@ -726,7 +727,7 @@ const FLOW_HTML=`<div class="sec-box" style="margin-top:10px;text-align:left;fon
 function jobCard(me,show){if(!show)return `<div class="jobcard jback"><div class="jteam">號牌</div><div class="jemo">📜</div><div class="jname">호패</div><div class="jab">손가락으로 누르고 있는 동안만 보여요.<br>옆사람이 못 보게 가리고 확인하세요!</div></div>`;const J=JOBS[me.job]||JOBS.citizen,m=me.role==='M',f=me.flavor;
   let main;
   if(me.job==='citizen'&&f)main=`${SBART[sbKey(f)]?`<img class="sbimg" src="${SBART[sbKey(f)]}" alt="">`:`<div class="jemo">${f.n.split(' ')[0]}</div>`}<div class="jname">${esc(f.n.split(' ').slice(1).join(' '))}</div><div class="jflav">🏮 종갓집 편</div><div class="jab">${esc(f.d)}<br><br>${J.ability}</div>`;
-  else main=`${jart(me.job,me.gender)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div><div class="jab">${J.ability}</div>${m&&f?`<div class="fakeh"><div class="fk-n">🎭 자객에 뽑히면 위장을 위한 <b>거짓 호패</b>가 주어집니다</div><div class="fk-c">${SBART[sbKey(f)]?`<img src="${SBART[sbKey(f)]}" alt="">`:''}<div><b>${esc(f.n)}</b><div>“${esc(f.d)}”</div></div></div></div>`:''}`;
+  else main=`${jart(me.job,me.gender)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div><div class="jab">${J.ability}</div>${m&&f?`<div class="fakeh"><div class="fk-n">🎭 자객에 뽑히면 위장을 위한 <b>거짓 호패</b>가 주어집니다</div><div class="fk-c">${SBART[sbKey(f)]?`<img src="${SBART[sbKey(f)]}" alt="">`:''}<div><b>${esc(f.n)}</b><div>“${esc(f.d)}”</div></div></div></div>`:''}${me.cover?(c=>`<div class="fakeh"><div class="fk-n">🎭 정체를 숨기고 이 신분으로 소개하세요</div><div class="fk-c">${SBART[sbKey(c)]?`<img src="${SBART[sbKey(c)]}" alt="">`:''}<div><b>${esc(c.n)}</b><div>“${esc(c.d)}”</div></div></div></div>`)(me.cover):''}`;
   return `<div class="jobcard ${m?'jm':'jc'} ${show?'':'hide-role'}"><div class="jteam">${m?'刺客 · 자객패':'宗家 · 종갓집'}</div>${main}${TODO[me.job]?`<div class="jab"><b>이번 판 할 일</b><br>${TODO[me.job]}</div>`:''}${m&&show?`<div class="jflav">동료 자객: ${V.mates.map(esc).join(', ')||'없음'}</div>`:''}</div>`}
 function jart(job,g){const k=(g==='F'?{police:'j_podo_F',soldier:'j_soldier_F'}[job]:0)||JART[job];return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
 function revealHtml(job,f){const J=JOBS[job]||JOBS.citizen;
@@ -896,7 +897,7 @@ function centerHtml(){const ph=V.phase,me=V.me,al=me&&me.alive;
   if(ph==='result')return V.result?bigResHtml(V.result):'';
   if(ph==='lobby'){const n=V.players.length,T=V.cfg.total||n;return cnote(`🏮 문패 ${esc(V.code)}`,`식구 ${n}/${T}명 입장 · ${n>=T?(isHost?'모두 모였소! 시작하시오':'모두 모였소! 곧 시작해요'):`${T-n}명 더 기다리는 중`}`)}
   if(ph==='roles')return cnote('🤫 호패 확인',me?'옆사람 몰래, 아래 버튼을 누르고 있는 동안만 보여요':'호패를 나눠주었습니다');
-  if(ph==='day')return cnote('☀️ 사랑방 공론',V.round===1?'돌아가며 이름과 신분(직업)을 소개하세요!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>');
+  if(ph==='day')return cnote('☀️ 사랑방 공론',V.round===1?'돌아가며 이름과 신분을 소개하세요!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>');
   if(ph==='vote'){if(!al)return cnote('📜 멍석말이 지목',`${me?'💀 탈락자는 지켜보기만 · ':''}${V.voted}/${V.voters}명 지목`);
     if(V.myVote!==undefined)return cnote(`✅ ${esc(pn(V.myVote))} 지목`,`다른 식구를 기다리는 중 (${V.voted}/${V.voters})`);
     return cnote(V.revote?'🤝 동점자 재지목':'📜 멍석말이 지목',voteSel?`${esc(pn(voteSel))} 선택됨 · 아래 버튼으로 확정`:'좌우 명단에서 한 명을 고르시오','rd')}
@@ -948,7 +949,7 @@ function bottomBox(){
     return `<div class="btxt">${isHost?`식구 ${n}/${c.total||n}명 입장 · 문패 <b>${esc(V.code)}</b>${bad?` <span class="err">${n<3?'최소 3명':'자객 수 조정 필요'}</span>`:''}`:`문패 <b>${esc(V.code)}</b> · 집사가 시작하기를 기다리는 중`}</div>
     <div class="brow">${H(btn('m-invite','📱 초대'))}${H(btn('m-settings','📜 룰 선택'))}${applyOn(V.cfg)&&me?btn('m-apply',me.apply?'✅ 지원함':'🗡️ 자객 지원'):''}${H(`<button id="start" class="red" ${bad?'disabled':''}>호패 나눠주고 시작</button>`)}${isHost?'':btn('leave','나가기')}</div>`}
   if(ph==='roles')return `<div class="btxt">${me?'옆사람 몰래 호패를 확인하세요':'호패를 나눠주었습니다'}</div><div class="brow">${me?btn('m-card','📜 내 호패 보기'):''}${H(btn('day','첫날 시작','red'))}</div>`;
-  if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 신분(직업)을 소개하세요!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}${V.sus&&V.sus.notes&&V.sus.notes.length?btn('m-notes','🕯️ 지난밤 쪽지'):''}</div>`;
+  if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 신분을 소개하세요!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}${V.sus&&V.sus.notes&&V.sus.notes.length?btn('m-notes','🕯️ 지난밤 쪽지'):''}</div>`;
   if(ph==='vote'){const hb=H(btn('endvote','강제 개표'));
     if(!me||!me.alive)return `<div class="btxt">${me?'💀 탈락자는 지목할 수 없소':''} 지목 진행 중 (${V.voted}/${V.voters})</div><div class="brow">${hb}</div>`;
     if(V.myVote!==undefined)return `<div class="btxt">✅ ${esc(pn(V.myVote))}님을 지목했소 (되돌릴 수 없음)</div><div class="brow">${btn('m-tally','📊 지목 현황')}${hb}</div>`;
