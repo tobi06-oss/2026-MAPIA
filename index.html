@@ -176,6 +176,9 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .endf .pobak{position:absolute;right:6px;top:150px;width:200px;margin:0;padding:8px 10px 10px;transform:rotate(2.5deg);z-index:3;background:#f6ead0 repeating-linear-gradient(0deg,transparent 0 22px,#0000000a 22px 23px)}
 .endf .pb-h{font-size:20px}.endf .pb-m{font-size:14px;line-height:1.45}.endf .pb-n span{font-size:13px}.endf .pb-t{font-size:15px}
 .pobak:before{content:'';position:absolute;left:50%;top:-9px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#6b3a1f;box-shadow:0 2px 3px #0005}
+.hw{display:inline-flex;flex-direction:column;align-items:center;gap:2px}.hw .hb{display:flex;gap:8px}.hw small{font-size:10.5px;line-height:1;color:#e9dcc0;opacity:.8;letter-spacing:.5px}
+.sp-btns .hw small{color:#6b5232}
+.brow:has(.hw),.sp-btns:has(.hw){align-items:flex-start}
 </style>
 
 </head>
@@ -615,7 +618,7 @@ function spreadHtml(){
     <div class="sp-head">${esc(head.t)}</div><div class="sp-pic">${pic}</div><div class="sp-quip">${esc(q)}</div></div>
   <div class="sp-panel"><div class="sp-title">${esc(title)}</div><div class="sp-in">${body}</div>
     <div class="sp-status"><b>${esc(status)}</b><div>${esc(st2)}</div>${lw}</div>
-    <div class="sp-btns">${isHost?'':'<button class="wood" id="mclose">닫기</button>'}${modal==='result'&&P?`<button class="wood" id="sp-tally">📊 지목 현황</button>`:''}${isHost?`<button class="red" id="sp-next">${V.phase==='result'?'다음으로':'사랑방으로 모이기'}</button>`:''}</div></div>`}
+    <div class="sp-btns">${isHost?'':'<button class="wood" id="mclose">닫기</button>'}${modal==='result'&&P?`<button class="wood" id="sp-tally">📊 지목 현황</button>`:''}${isHost?`<span class="hw"><button class="red" id="sp-next">${V.phase==='result'?'다음으로':'사랑방으로 모이기'}</button><small>집사에게만 보여요</small></span>`:''}</div></div>`}
 function verdictHtml(){if(!V.cfg.apply)return'';const vs=V.roles.filter(p=>p.apply&&p.job==='mafia');const won=V.winner==='M';
   const others=V.roles.filter(p=>p.apply&&p.job!=='mafia');if(!vs.length&&!others.length)return'';
   return `<div class="sec-box center"><h3>${won?'🎁 기념품 수여식':'🪵 곤장 집행'}</h3>${vs.length?vs.map(p=>`<div style="font-size:19px;margin:4px 0"><b>${esc(p.name)}</b> ${won?'— 자객으로 승리! 🎁 기념품을 받으세요':`— 생존자들에게 곤장 ${V.cfg.gonjang}대! 엎드리시오 🪵`}</div>`).join(''):'<div class="muted">지원해서 자객이 된 사람은 없었습니다</div>'}
@@ -665,7 +668,7 @@ function bottomBox(){
   if(screen==='home'||!V){
     if(screen==='game'&&!V)return `<div class="btxt">고택 대문을 두드리는 중…</div><div class="brow">${errMsg?`<span class="err">${esc(errMsg)}</span>`:''}${btn('home','처음으로')}</div>`;
     return `<div class="brow big2">${btn('go-host','🏮 고택 열기','red')}${btn('go-join','🚪 고택 입장','blue')}</div>${errMsg?`<div class="err">${esc(errMsg)}</div>`:''}`}
-  const ph=V.phase,me=V.me,H=x=>isHost?x:'';
+  const ph=V.phase,me=V.me,H=x=>isHost?`<span class="hw"><span class="hb">${x}</span><small>집사에게만 보여요</small></span>`:'';
   const sel=voteSel?pn(voteSel):null;
   if(ph==='lobby'){const n=V.players.length,c=V.cfg;const bad=n-2*c.mafia<c.gap||n<3||c.mafia<1;
     return `<div class="btxt">${isHost?`식구 ${n}명 입장 · 문패 <b>${esc(V.code)}</b>${bad?` <span class="err">${n<3?'최소 3명':'자객 수 조정 필요'}</span>`:''}`:`문패 <b>${esc(V.code)}</b> · 집사가 시작하기를 기다리는 중`}</div>
