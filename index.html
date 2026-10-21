@@ -431,7 +431,7 @@ function faceIdx(p){const ps=(V&&V.players)||[];const same=ps.filter(x=>(x.gende
 function faceSrc(p){if(p.rev){const r=idSrc(p.rev.job,p.rev.flavor,p.gender);if(r&&p.rev.job!=='mafia')return r}const ps=(V&&V.players)||[],k=ps.findIndex(x=>x.token===p.token);return avatarSvg(p.gender==='F'?'F':'M',k<0?0:k)}
 function faceImg(p,cls){return `<img class="face ${cls||''}" src="${faceSrc(p)}" alt="">`}
 /* ---- 호외(탈락 순간 익살 헤드라인) ---- */
-const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_perfect:'img/hoe/c_perfect.jpg',c_amhaeng:'img/hoe/c_amhaeng.jpg',h_caught:'img/hoe/h_caught.jpg',h_none:'img/hoe/h_none.jpg',h_tie:'img/hoe/h_tie.jpg',h_wrong2:'img/hoe/h_wrong2.jpg',h_wrong_F2:'img/hoe/h_wrong_F2.jpg',h_night_F:'img/hoe/h_night_F.jpg',h_soldier:'img/hoe/h_soldier.jpg',h_nightDoctor:'img/hoe/h_nightDoctor.jpg',h_nightPolice:'img/hoe/h_nightPolice.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
+const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_perfect:'img/hoe/c_perfect.jpg',c_amhaeng:'img/hoe/c_amhaeng.jpg',h_caught:'img/hoe/h_caught.jpg',h_none:'img/hoe/h_none.jpg',h_tie:'img/hoe/h_tie.jpg',h_wrong2:'img/hoe/h_wrong2.jpg',h_wrong_F2:'img/hoe/h_wrong_F2.jpg',h_night_F:'img/hoe/h_night_F.jpg',h_night_sunbi:'img/hoe/h_night_sunbi.jpg',h_soldier:'img/hoe/h_soldier.jpg',h_nightDoctor:'img/hoe/h_nightDoctor.jpg',h_nightPolice:'img/hoe/h_nightPolice.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
 
 const HOE={
  caught:['멍석말이 대성공! 자객 {n}, 관아로 직행','{n}의 가면이 벗겨지다! 고택 식구들 덩실덩실','눈치 백단 종갓집, 자객 {n}을 콕 집어내다','어설픈 연기 들통! {n}, 끌려가며 "억울하오" 연발','자객 {n}, 숨긴 단검이 소맷자락에서 툭!'],
@@ -453,7 +453,7 @@ function hoe(k,p){const L=[];HOE[k].forEach(x=>{const o=typeof x==='string'?{t:x
   return {t:o.t.replace(/\{n\}/g,p?p.name:'').replace(/\{f\}/g,p&&p.flavor?p.flavor.n:''),a:o.a||null}}
 function hoeVote(p){if(p.role==='M')return hoe(p.flavor&&Math.random()<.5?'caughtCover':'caught',p);
   const sp=null;return hoe(sp&&Math.random()<.7?sp:'wrong',p)}
-function hoeNight(p){if(sbKey(p.flavor)==='이웃집 할매')return {t:`이웃집 할매 피습! ${p.name}, 자객의 칼끝에 쓰러지다`,a:'h_night_F'};if(p.gender==='F')return {t:`간밤 피습! ${p.name}, 자객의 습격을 받다`,a:'h_night_F'};return hoe('night',p)}
+function hoeNight(p){if(sbKey(p.flavor)==='낙방한 선비')return {t:`낙방한 선비 피습! ${p.name}, 과거 길 대신 저승길에 오르다`,a:'h_night_sunbi'};if(sbKey(p.flavor)==='이웃집 할매')return {t:`이웃집 할매 피습! ${p.name}, 자객의 칼끝에 쓰러지다`,a:'h_night_F'};if(p.gender==='F')return {t:`간밤 피습! ${p.name}, 자객의 습격을 받다`,a:'h_night_F'};return hoe('night',p)}
 function startDay(){G.round++;G.phase='day';G.endAt=Date.now()+G.cfg.minutes*60000;G.votes={};G.revote=false}
 function startVote(revote){G.phase='vote';G.votes={};G.revote=revote;if(!revote)G.cands=aliveP().map(p=>p.token)}
 function hostTimer(){if(G&&G.phase==='day'&&Date.now()>=G.endAt){startVote(false);hostSave();broadcast()}if(G&&G.phase==='defense'&&Date.now()>=G.endAt){G.phase='judge';hostSave();broadcast()}botTick()}
