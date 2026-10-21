@@ -179,6 +179,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .hw{display:inline-flex;flex-direction:column;align-items:center;gap:2px}.hw .hb{display:flex;gap:8px}.hw small{font-size:10.5px;line-height:1;color:#e9dcc0;opacity:.8;letter-spacing:.5px}
 .sp-btns .hw small{color:#6b5232}
 .brow:has(.hw),.sp-btns:has(.hw){align-items:flex-start}
+.cuffimg{display:block;width:64px;height:64px;object-fit:contain;margin:0 auto 4px}
 </style>
 
 </head>
@@ -540,7 +541,7 @@ function revealHtml(job,f){const J=JOBS[job]||JOBS.citizen;
   return `<div class="reveal">정체는 ${J.emo} <b>${J.name}</b>였습니다</div>`}
 function revShort(r){if(!r)return'';const J=JOBS[r.job]||JOBS.citizen;return r.job==='citizen'&&r.flavor?r.flavor.n:J.emo+' '+J.name}
 function applyCardHtml(){const on=V.me&&V.me.apply,c=V.cfg;
-  return `<div class="notice"><div>📜 자객에 지원하면 뽑힐 확률이 소폭 올라가요.</div><div>🤫 누가 지원했는지는 아무도 모릅니다.</div><div>🎁 지원해서 자객이 되어 승리하면 <b>기념품</b>을 드려요.</div><div class="warn">⚠️ 주의) 지원해서 자객으로 뽑힌 경우, 게임에서 지면 <b>생존자들에게 곤장 ${c.gonjang}대</b>를 맞습니다.</div></div>
+  return `<div class="notice"><div>📜 자객에 지원하면 뽑힐 확률이 소폭 올라가요.</div><div>🤫 누가 지원했는지는 아무도 모릅니다.</div><div>🎁 지원해서 자객이 되어 승리하면 <b>기념품</b>을 드려요.</div><div class="warn"><img class="cuffimg" src="img/cuffs.png" alt="" onerror="this.remove()">⚠️ 단, 지원해서 뽑힌 자객이 게임에서 지면, 중대한 책임을 물어 <b>30분간 포박</b>됩니다.</div></div>
   <button id="apply" class="${on?'red':'wood'}">${on?'✅ 지원했습니다 (누르면 취소)':'🗡️ 몰래 지원하기'}</button>`}
 const ENDINGS={
  m_fool:{t:'헛똑똑이 이장과 훈장, 고택을 말아먹다!',s:'잡으라는 자객은 놓치고 애먼 식구만 멍석말이…',e:'🤦'},
@@ -563,8 +564,8 @@ function photoCardHtml(){const E=endInfo(),m=V.winner==='M';
   <div class="ecap">${esc(E.t)}</div><div class="esub">${esc(E.s)}</div>
   <div class="efoot"><span>🗡️ 자객: ${E.ms.map(esc).join(', ')}</span><span>${PC_DATE}</span></div><div class="eseal" ${E.key==='m_perfect'?'style="display:none"':''}>${m?'賊':'勝'}</div></div>
   ${pobakHtml(E)}<div class="center"><button class="wood" id="savecard">📸 사진으로 저장</button></div>`}
-function pobakHtml(E){if(V.winner==='M'||!E.ms.length)return'';const k='pb_'+V.code+'_'+E.ms.join();let t0=Date.now();try{const v=+localStorage.getItem(k);if(v)t0=v;else localStorage.setItem(k,t0)}catch(e){}window._pbT0=t0;
-  return `<div class="pobak"><div class="pb-h">포 박 령</div><div class="pb-m"><b>${esc(V.pobak||'어설픈')}</b> 자객들. 임무에 실패한 대가로 <b>30분간 포박</b>한다.</div><div class="pb-n">${E.ms.map(n=>`<span>${esc(n)}</span>`).join('')}</div><div class="pb-t" id="pbtm">30:00</div></div>`}
+function pobakHtml(E){const ms=V.cfg.apply?V.roles.filter(p=>p.apply&&p.job==='mafia').map(p=>p.name):[];if(V.winner==='M'||!ms.length)return'';const k='pb_'+V.code+'_'+ms.join();let t0=Date.now();try{const v=+localStorage.getItem(k);if(v)t0=v;else localStorage.setItem(k,t0)}catch(e){}window._pbT0=t0;
+  return `<div class="pobak"><div class="pb-h">포 박 령</div><div class="pb-m"><b>${esc(V.pobak||'어설픈')}</b> 자객들. 임무에 실패한 대가로 <b>30분간 포박</b>한다.</div><img class="cuffimg" src="img/cuffs.png" alt="" onerror="this.remove()"><div class="pb-n">${ms.map(n=>`<span>${esc(n)}</span>`).join('')}</div><div class="pb-t" id="pbtm">30:00</div></div>`}
 setInterval(()=>{const el=document.getElementById('pbtm');if(!el||!window._pbT0)return;const s=Math.max(0,1800-Math.floor((Date.now()-window._pbT0)/1000));el.textContent=s?`남은 포박 ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:'포박을 풀어주시오!';el.classList.toggle('done',!s)},1000);
 function loadImg(src){return new Promise(r=>{if(!src)return r(null);const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
 function wrapText(c,t,x,y,w,lh){const out=[];let line='';for(const wd of t.split(' ')){const tr=line?line+' '+wd:wd;if(c.measureText(tr).width>w&&line){out.push(line);line=wd}else line=tr}out.push(line);out.forEach((l,i)=>c.fillText(l,x,y+i*lh));return out.length}
@@ -619,9 +620,9 @@ function spreadHtml(){
   <div class="sp-panel"><div class="sp-title">${esc(title)}</div><div class="sp-in">${body}</div>
     <div class="sp-status"><b>${esc(status)}</b><div>${esc(st2)}</div>${lw}</div>
     <div class="sp-btns">${isHost?'':'<button class="wood" id="mclose">닫기</button>'}${modal==='result'&&P?`<button class="wood" id="sp-tally">📊 지목 현황</button>`:''}${isHost?`<span class="hw"><button class="red" id="sp-next">${V.phase==='result'?'다음으로':'사랑방으로 모이기'}</button><small>집사에게만 보여요</small></span>`:''}</div></div>`}
-function verdictHtml(){if(!V.cfg.apply)return'';const vs=V.roles.filter(p=>p.apply&&p.job==='mafia');const won=V.winner==='M';
+function verdictHtml(){if(!V.cfg.apply||V.winner!=='M')return'';const vs=V.roles.filter(p=>p.apply&&p.job==='mafia');const won=V.winner==='M';
   const others=V.roles.filter(p=>p.apply&&p.job!=='mafia');if(!vs.length&&!others.length)return'';
-  return `<div class="sec-box center"><h3>${won?'🎁 기념품 수여식':'🪵 곤장 집행'}</h3>${vs.length?vs.map(p=>`<div style="font-size:19px;margin:4px 0"><b>${esc(p.name)}</b> ${won?'— 자객으로 승리! 🎁 기념품을 받으세요':`— 생존자들에게 곤장 ${V.cfg.gonjang}대! 엎드리시오 🪵`}</div>`).join(''):'<div class="muted">지원해서 자객이 된 사람은 없었습니다</div>'}
+  return `<div class="sec-box center"><h3>🎁 기념품 수여식</h3>${vs.length?vs.map(p=>`<div style="font-size:19px;margin:4px 0"><b>${esc(p.name)}</b> — 자객으로 승리! 🎁 기념품을 받으세요</div>`).join(''):'<div class="muted">지원해서 자객이 된 사람은 없었습니다</div>'}
   ${others.length?`<div class="muted" style="margin-top:6px">지원했지만 뽑히지 않은 사람: ${others.map(p=>esc(p.name)).join(', ')}</div>`:''}</div>`}
 function chatHtml(){const c=V.chat||[];return `<div class="chat" id="chatbox">${c.length?c.map(m=>`<div><b>${esc(m.from)}</b> ${esc(m.text)}</div>`).join(''):'<div class="muted">동료 자객과 오늘 밤 작전을 짜보세요</div>'}</div>${me_alive()&&V.phase==='night'?`<div style="display:flex;gap:8px;margin-top:8px"><input id="chatin" maxlength="120" placeholder="속닥속닥"><button id="chatsend" class="wood" style="width:auto;flex:0 0 auto;margin:0;padding:0 18px">전송</button></div>`:'<div class="muted" style="margin-top:6px">밀담은 밤에만 보낼 수 있어요</div>'}`}
 
@@ -705,7 +706,7 @@ function modalHtml(){const c=V&&V.cfg;
     <div class="muted" style="margin-top:12px">🧪 테스트 모드: 컴퓨터 식구 9명과 한 판을 돌려 화면을 미리 볼 수 있어요. 컴퓨터 식구는 지목과 밤 행동을 알아서 해요. 토론은 집사 버튼으로 바로 끝낼 수 있어요.<br>소리는 집사 폰에서 크게 틀어두는 걸 추천해요(배경음악은 집사 폰만 기본으로 켜져요).<br>폰을 가로로 돌리면 화면이 크게 보여요. 화면 회전이 잠겨 있으면 자동으로 눕혀서 보여드려요.</div>`;
   case 'rules':return `<h2>📜 놀이 방법</h2><div class="rules"><b>🎯 목표</b><br>🏮 종갓집: 숨어든 자객을 모두 관아로 송치하면 승리<br>🗡️ 자객패: 자객 수가 식구 수와 같아지면 승리<br><br>
     <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람은 관아로 송치되고 정체가 드러나요. 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 눈을 감고, 자객·암행어사·의원만 폰으로 몰래 움직여요.<br>6. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
-    <b>🗡️ 자객 지원</b><br>대기실에서 몰래 지원하면 자객에 뽑힐 확률이 소폭 올라가요. 지원해서 자객이 된 뒤 이기면 🎁 기념품, 지면 생존자들에게 곤장!<br><br><b>🤐 약속</b><br>탈락한 사람은 말하지 않기. 남의 폰 훔쳐보지 않기.</div>`;
+    <b>🗡️ 자객 지원</b><br>대기실에서 몰래 지원하면 자객에 뽑힐 확률이 소폭 올라가요. 지원해서 자객이 된 뒤 이기면 🎁 기념품, 지면 30분간 포박!<br><br><b>🤐 약속</b><br>탈락한 사람은 말하지 않기. 남의 폰 훔쳐보지 않기.</div>`;
   case 'dex':{const row=x=>`<div class="dexrow dexs">${SBART[x[0].split(' ').slice(1).join(' ')]?`<img class="sbmini big" src="${SBART[x[0].split(' ').slice(1).join(' ')]}" alt="">`:''}<b>${esc(x[0])}</b>${x[2]?' <span class="muted">🎭</span>':''}<div class="muted">${esc(x[1])}</div></div>`;
     return `<h2>📖 직업 도감</h2><h3>고정 직업</h3>${['mafia','police','doctor','soldier'].map(k=>{const J=JOBS[k];return `<div class="dexrow dexj">${jart(k)}<b class="${J.team==='M'?'rd':'bl'}">${J.emo} ${J.name}</b> <span class="muted">${TEAM[J.team]}</span><div class="muted">${J.ability}</div></div>`}).join('')}
     <h3>👩 아씨들의 신분 (${SINBUN.F.length})</h3>${SINBUN.F.map(row).join('')}<h3>👨 도령들의 신분 (${SINBUN.M.length})</h3>${SINBUN.M.map(row).join('')}<div class="muted center" style="margin-top:8px">🎭 표시는 자객이 위장할 수도 있는 신분이에요</div>`}
@@ -724,7 +725,7 @@ function modalHtml(){const c=V&&V.cfg;
     <label class="chk"><input type="checkbox" data-job="soldier" ${c.soldier?'checked':''}> 🛡️ 호위무사 · 칼 한 번 막아냄</label>
     <label>🕯️ 송치자 마지막 한마디 시간</label>${st('lastWords',c.lastWords?c.lastWords+'초':'없음')}
     <label class="chk"><input type="checkbox" data-job="apply" ${c.apply?'checked':''}> 🗡️ 자객 지원 받기 (지금 지원자 ${V.applicants}명, 누군지는 비밀)</label>
-    ${c.apply?`<label>지원자 당첨 가중치</label>${st('applyW',c.applyW+'배')}<div class="muted" style="margin-top:4px">${applyOdds(n,c.mafia,c.applyW)}</div><label>지원했다 패배한 자객의 곤장</label>${st('gonjang',c.gonjang+'대')}`:''}
+    ${c.apply?`<label>지원자 당첨 가중치</label>${st('applyW',c.applyW+'배')}<div class="muted" style="margin-top:4px">${applyOdds(n,c.mafia,c.applyW)}</div>`:''}
     <label class="chk"><input type="checkbox" id="hp" ${c.hostPlays?'checked':''}> 집사(방장)도 게임에 참가</label>
     <div class="err">${n-2*c.mafia<c.gap?`종갓집이 자객보다 ${c.gap}명 이상 많아야 해요`:''}${n<3?'최소 3명이 필요해요':''}</div>`}
   case 'apply':return `<h2>🗡️ 자객 지원</h2>${applyCardHtml()}`;
