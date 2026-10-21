@@ -250,6 +250,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 <div id="stage"></div><div id="mroot"></div><div id="droot"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js" onerror="this.remove();var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';document.head.appendChild(s)"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="lib/mqtt.min.js" async></script>
 <script>
 /* ===== 공통 ===== */
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
@@ -270,37 +271,82 @@ const myToken=LS.get('mafia-token')||(()=>{const t=rid(12);LS.set('mafia-token',
 function waitPeer(cb){if(LOCAL||window.Peer)return cb();let n=0;const iv=setInterval(()=>{if(window.Peer||++n>100){clearInterval(iv);cb()}},100)}
 
 /* ===== 연결 계층 ===== */
+// 1순위: 기기끼리 직접 연결(PeerJS/WebRTC). 같은 와이파이면 잘 되지만 LTE끼리는 통신사 망이 막는 일이 많다.
+// 2순위: 인터넷 중계(MQTT 공개 서버). 직접 연결이 7초 안에 안 열리면 자동으로 넘어감. 내용은 기기마다 따로 암호화(ECDH+AES).
+const RELAYS=window.RELAY_TEST||['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+const ECDH={name:'ECDH',namedCurve:'P-256'},TE=new TextEncoder(),TD=new TextDecoder();
+function b64(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)}
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function roomTopic(code){const h=new Uint8Array(await crypto.subtle.digest('SHA-256',TE.encode(PREFIX+code)));return 'ojm1/'+[...h.slice(0,10)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function mkKeys(){const kp=await crypto.subtle.generateKey(ECDH,true,['deriveKey']);return{kp,pub:await crypto.subtle.exportKey('jwk',kp.publicKey)}}
+async function derive(kp,jwk){const pk=await crypto.subtle.importKey('jwk',jwk,ECDH,false,[]);return crypto.subtle.deriveKey({name:'ECDH',public:pk},kp.privateKey,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function seal(key,obj){const iv=crypto.getRandomValues(new Uint8Array(12));return{iv:b64(iv),ct:b64(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,TE.encode(JSON.stringify(obj))))}}
+async function unseal(key,m){return JSON.parse(TD.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(m.iv)},key,unb64(m.ct))))}
+function whenMqtt(cb){if(window.mqtt)return cb();let n=0;const iv=setInterval(()=>{if(window.mqtt||++n>150){clearInterval(iv);if(window.mqtt)cb()}},200)}
+function hostRelay(code,onMsg,onUp){
+  const peers={},cl=[],hid=rid(8);let keys,top;
+  whenMqtt(async()=>{keys=await mkKeys();top=await roomTopic(code);
+    RELAYS.forEach((url,i)=>{const c=mqtt.connect(url,{clientId:'h'+rid(10),reconnectPeriod:3000,connectTimeout:8000,keepalive:30});cl[i]=c;
+      c.on('connect',()=>{c.subscribe(top+'/h');onUp();c.publish(top+'/hb',JSON.stringify({up:hid}))});
+      c.on('message',(t,buf)=>{let m;try{m=JSON.parse(buf.toString())}catch(e){return}if(!m||!m.from)return;const cid='mq'+i+':'+m.from;
+        if(m.hello){derive(keys.kp,m.hello).then(k=>{peers[cid]={key:k,q:Promise.resolve(),rq:Promise.resolve(),i,from:m.from};c.publish(top+'/c/'+m.from,JSON.stringify({hi:keys.pub,hid}))}).catch(()=>{});return}
+        if(m.bye){if(peers[cid]){delete peers[cid];onMsg(cid,{t:'gone'})}return}
+        const p=peers[cid];if(!p){c.publish(top+'/c/'+m.from,JSON.stringify({rehello:1}));return}
+        p.rq=p.rq.then(()=>unseal(p.key,m)).then(d=>onMsg(cid,d),()=>{})})})});
+  // 집사가 새로고침·양도로 바뀌면 식구들이 다시 인사하도록 주기적으로 알림
+  setInterval(()=>cl.forEach(c=>c&&c.connected&&c.publish(top+'/hb',JSON.stringify({up:hid}))),15000);
+  return{send(cid,msg){const p=peers[cid];if(!p)return;p.q=p.q.then(()=>seal(p.key,msg)).then(e=>cl[p.i]&&cl[p.i].publish(top+'/c/'+p.from,JSON.stringify(e))).catch(()=>{})},ids:()=>Object.keys(peers)}}
+function clientRelay(code,onMsg,onStatus){
+  const me=rid(10);let c,key=null,keys,top,q=Promise.resolve(),rq=Promise.resolve(),bt,hostId=null;
+  const hello=()=>c&&c.publish(top+'/h',JSON.stringify({from:me,hello:keys.pub}));
+  function use(j){if(c)try{c.end(true)}catch(e){}
+    c=mqtt.connect(RELAYS[j],{clientId:'c'+me+j,reconnectPeriod:3000,connectTimeout:8000,keepalive:20,will:{topic:top+'/h',payload:JSON.stringify({from:me,bye:1}),qos:0,retain:false}});const cc=c;
+    clearTimeout(bt);bt=setTimeout(()=>{if(!key&&RELAYS.length>1)use((j+1)%RELAYS.length)},9000); // 이 중계에 집사가 없으면 다음 중계로
+    cc.on('connect',()=>cc.subscribe([top+'/c/'+me,top+'/hb'],()=>hello()));
+    cc.on('message',(t,buf)=>{if(cc!==c)return;let m;try{m=JSON.parse(buf.toString())}catch(e){return}
+      if(m.up){if(hostId&&m.up!==hostId){key=null;hostId=null;onStatus(false);hello()}return}
+      if(m.hi){clearTimeout(bt);hostId=m.hid;derive(keys.kp,m.hi).then(k=>{key=k;onStatus(true)});return}
+      if(m.rehello){key=null;hello();return}
+      if(key){const k=key;rq=rq.then(()=>unseal(k,m)).then(onMsg,()=>{})}});
+    cc.on('offline',()=>{if(cc===c)onStatus(false)})}
+  whenMqtt(async()=>{keys=await mkKeys();top=await roomTopic(code);use(0)});
+  return{send(msg){if(!key)return;const k=key;q=q.then(()=>seal(k,msg)).then(e=>c.publish(top+'/h',JSON.stringify({from:me,...e}))).catch(()=>{})}}}
 function hostTransport(code,onMsg,onStatus){
   const conns=new Map();
   if(LOCAL){const bc=new BroadcastChannel('mafia-'+code);
     bc.onmessage=e=>{const m=e.data;if(m.to!=='host')return;conns.set(m.from,1);onMsg(m.from,m.msg)};
     onStatus(true);return{send:(id,msg)=>bc.postMessage({to:id,msg}),ids:()=>[...conns.keys()]}}
-  let peer,dead=false;
+  let peer,peerOK=false,relayOK=false;const st=(err)=>onStatus(peerOK||relayOK,err);
   function start(){peer=new Peer(PREFIX+code,PEER_OPT);
-    peer.on('open',()=>onStatus(true));
+    peer.on('open',()=>{peerOK=true;st()});
     peer.on('connection',c=>{c.on('open',()=>conns.set(c.peer,c));c.on('data',d=>{conns.set(c.peer,c);onMsg(c.peer,d)});c.on('close',()=>{conns.delete(c.peer);onMsg(c.peer,{t:'gone'})})});
-    peer.on('disconnected',()=>{onStatus(false);try{peer.reconnect()}catch(e){}});
-    peer.on('error',e=>{onStatus(false,e.type);if(e.type==='unavailable-id'){setTimeout(()=>{peer.destroy();start()},3000)}else if(['network','server-error','socket-error','socket-closed'].includes(e.type)){setTimeout(()=>{if(peer.disconnected&&!peer.destroyed)try{peer.reconnect()}catch(x){}},2000)}});}
-  start();
-  return{send:(id,msg)=>{const c=conns.get(id);if(c&&c.open)try{c.send(msg)}catch(e){}},ids:()=>[...conns.keys()]};
+    peer.on('disconnected',()=>{peerOK=false;st();try{peer.reconnect()}catch(e){}});
+    peer.on('error',e=>{peerOK=false;st(e.type);if(e.type==='unavailable-id'){setTimeout(()=>{peer.destroy();start()},3000)}else if(['network','server-error','socket-error','socket-closed'].includes(e.type)){setTimeout(()=>{if(peer.disconnected&&!peer.destroyed)try{peer.reconnect()}catch(x){}},2000)}});}
+  if(window.Peer)start();
+  const relay=hostRelay(code,onMsg,()=>{relayOK=true;st()});
+  return{send:(id,msg)=>{if(id.startsWith('mq'))return relay.send(id,msg);const c=conns.get(id);if(c&&c.open)try{c.send(msg)}catch(e){}},ids:()=>[...conns.keys(),...relay.ids()]};
 }
 function clientTransport(code,onMsg,onStatus){
   if(LOCAL){const me=rid(8);const bc=new BroadcastChannel('mafia-'+code);bc.onmessage=e=>{if(e.data.to===me)onMsg(e.data.msg)};
     const send=msg=>bc.postMessage({to:'host',from:me,msg});setTimeout(()=>onStatus(true),50);return{send}}
-  let peer,conn,timer,dialT;
-  function connect(){if(!peer||peer.destroyed)return;if(peer.disconnected){try{peer.reconnect()}catch(e){}}
+  let peer,conn,timer,dialT,relay=null,mode='p2p',relT;
+  function connect(){if(mode!=='p2p'||!peer||peer.destroyed)return;if(peer.disconnected){try{peer.reconnect()}catch(e){}}
     if(conn&&!conn.open)try{conn.close()}catch(e){}
-    const c=peer.connect(PREFIX+code,{reliable:true});conn=c;NET.stage='dial';draw();
+    const c=peer.connect(PREFIX+code,{reliable:true});conn=c;if(NET.stage!=='relay')NET.stage='dial';draw();
     // 집사는 찾았는데 직접 연결(WebRTC)이 안 열리면 오류 없이 멈춰 있으므로, 10초 지나면 끊고 다시 시도
     clearTimeout(dialT);dialT=setTimeout(()=>{if(conn===c&&!c.open){NET.stage='ice';NET.fails++;draw();try{c.close()}catch(e){}retry()}},10000);
-    c.on('open',()=>{if(conn!==c)return;clearTimeout(dialT);NET.stage='ok';NET.fails=0;onStatus(true)});c.on('data',d=>{if(conn===c)onMsg(d)});
-    c.on('close',()=>{if(conn!==c)return;onStatus(false);retry()});c.on('error',()=>{if(conn!==c)return;onStatus(false);retry()})}
+    c.on('open',()=>{if(conn!==c||mode!=='p2p')return;clearTimeout(dialT);clearTimeout(relT);NET.stage='ok';NET.fails=0;onStatus(true)});c.on('data',d=>{if(conn===c&&mode==='p2p')onMsg(d)});
+    c.on('close',()=>{if(conn!==c||mode!=='p2p')return;onStatus(false);retry();laterRelay()});c.on('error',()=>{if(conn!==c||mode!=='p2p')return;onStatus(false);retry();laterRelay()})}
   function retry(){clearTimeout(timer);timer=setTimeout(connect,2500)}
-  NET.stage='srv';peer=new Peer(PEER_OPT);peer.on('open',connect);peer.on('error',e=>{if(e.type==='peer-unavailable')NET.stage='nohost';onStatus(false,e.type);if(e.type==='peer-unavailable')retry();else if(peer.disconnected)retry()});
-  peer.on('disconnected',()=>{onStatus(false);retry()});
+  function laterRelay(){clearTimeout(relT);relT=setTimeout(goRelay,7000)}
+  function goRelay(){if(relay||(conn&&conn.open&&mode==='p2p'))return;NET.stage='relay';draw();
+    relay=clientRelay(code,d=>{if(mode==='relay')onMsg(d)},ok=>{if(ok&&mode!=='relay'){mode='relay';clearTimeout(timer);clearTimeout(dialT);try{peer&&peer.destroy()}catch(e){}}if(mode==='relay'){NET.stage=ok?'ok':'relay';NET.relay=true;onStatus(ok)}})}
+  NET.stage='srv';laterRelay();
+  if(window.Peer){peer=new Peer(PEER_OPT);peer.on('open',connect);peer.on('error',e=>{if(mode!=='p2p')return;if(e.type==='peer-unavailable')NET.stage='nohost';onStatus(false,e.type);if(e.type==='peer-unavailable')retry();else if(peer.disconnected)retry()});
+    peer.on('disconnected',()=>{if(mode!=='p2p')return;onStatus(false);retry()})}
   // 화면 다시 켜면 즉시 재접속
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(!conn||!conn.open))connect()});
-  return{send:msg=>{if(conn&&conn.open)try{conn.send(msg)}catch(e){}}};
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode==='p2p'&&(!conn||!conn.open))connect()});
+  return{send:msg=>{if(mode==='relay')return relay.send(msg);if(conn&&conn.open)try{conn.send(msg)}catch(e){}}};
 }
 
 /* ===== 직업 카드 ===== */
@@ -819,7 +865,7 @@ function btn(id,label,cls){return `<button id="${id}" class="${cls||'wood'}">${l
 function bottomBox(){
   if(screen==='home'||!V){
     if(screen==='game'&&!V){const rc=(LS.get('mafia-role')||{}).code||'',long=Date.now()-(window.knockAt||0)>8000;
-      const why=NET.stage==='ice'||NET.fails&&NET.stage==='dial'?`고택은 찾았는데 기기끼리 직접 연결이 막혀요 (${NET.fails}번째 재시도) · 같은 와이파이에 붙여 보세요`:NET.stage==='nohost'||long&&NET.stage!=='dial'?'고택이 안 보여요 · 집사 화면이 켜져 있고 문패가 맞는지 확인하세요 (한 폰으로 집사·식구 동시엔 안 돼요)':NET.stage==='srv'&&long?'연결 서버에 못 붙고 있어요 · 인터넷 연결을 확인해 주세요':NET.stage==='dial'?'고택 문을 여는 중…':'';
+      const why=NET.stage==='relay'?'직접 연결이 막혀서 인터넷 중계로 들어가는 중… (LTE도 돼요)':NET.stage==='ice'||NET.fails&&NET.stage==='dial'?`고택은 찾았는데 기기끼리 직접 연결이 막혀요 (${NET.fails}번째 재시도) · 같은 와이파이에 붙여 보세요`:NET.stage==='nohost'||long&&NET.stage!=='dial'?'고택이 안 보여요 · 집사 화면이 켜져 있고 문패가 맞는지 확인하세요 (한 폰으로 집사·식구 동시엔 안 돼요)':NET.stage==='srv'&&long?'연결 서버에 못 붙고 있어요 · 인터넷 연결을 확인해 주세요':NET.stage==='dial'?'고택 문을 여는 중…':'';
       return `<div class="btxt">🚪 문패 ${esc(rc)} 대문을 두드리는 중…${why?`<br><small>${why}</small>`:''}</div><div class="brow">${errMsg?`<span class="err">${esc(errMsg)}</span>`:''}${btn('home','처음으로')}</div>`}
     return `<div class="brow big2">${btn('go-host','🏮 고택 열기','red')}${btn('go-join','🚪 고택 입장','blue')}</div>${errMsg?`<div class="err">${esc(errMsg)}</div>`:''}`}
   const ph=V.phase,me=V.me,H=x=>isHost?`<span class="hw"><span class="hb">${x}</span><small>집사에게만 보여요</small></span>`:'';
