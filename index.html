@@ -317,7 +317,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 /* ===== 방장(사회자) 로직 ===== */
 let G=null, HT=null, hostTick=null;
 const HK='mafia-host-state';
-function defaultCfg(){return{mafia:2,gap:4,minutes:10,night:true,hostPlays:true,police:true,doctor:true,soldier:false,lastWords:60,flavor:true,apply:true,applyW:1.2,gonjang:3,judge:true}}
+function defaultCfg(){return{mafia:2,gap:4,minutes:10,night:true,hostPlays:true,police:true,doctor:true,soldier:false,lastWords:60,flavor:true,apply:true,applyW:1.2,gonjang:3}}
 function hostStart(resume){
   if(resume)resume.cfg=Object.assign(defaultCfg(),resume.cfg);
   G=resume||{code:rid(4),cfg:defaultCfg(),chat:[],players:[],phase:'lobby',round:0,log:[],votes:{},nightVotes:{},cands:[],revote:false,result:null,winner:null,endAt:0};
@@ -484,8 +484,7 @@ function countVotes(){
   const mx=Math.max(...Object.values(cnt));const ties=G.cands.filter(t=>cnt[t]===mx);
   const r={votes:{...G.votes},cands:[...G.cands],dead:null,role:null,revote:false,noone:false};
   if(ties.length===1&&mx>0){const p=G.players.find(p=>p.token===ties[0]);
-    if(G.cfg.judge){G.first=r;G.accused=p.token;G.jv={};if(G.cfg.lastWords>0){G.phase='defense';G.endAt=Date.now()+G.cfg.lastWords*1000}else G.phase='judge';return}
-    sendOff(p,r);G.endAt=Date.now()+G.cfg.lastWords*1000}
+    G.first=r;G.accused=p.token;G.jv={};if(G.cfg.lastWords>0){G.phase='defense';G.endAt=Date.now()+G.cfg.lastWords*1000}else G.phase='judge';return}
   else if(!G.revote){r.revote=true;G.cands=ties.length?ties:G.cands}
   else{r.noone=true;r.head=hoe('tie');G.log.push(`${G.round}일째 공론: 재지목도 동점, 송치 없음`)}
   G.result=r;G.phase='result';
@@ -804,8 +803,7 @@ function modalHtml(){const c=V&&V.cfg;
     <label class="chk"><input type="checkbox" data-job="police" ${c.police?'checked':''}> 📜 암행어사 · 밤에 한 명 정체 조사</label>
     <label class="chk"><input type="checkbox" data-job="doctor" ${c.doctor?'checked':''}> 🌿 의원 · 밤에 한 명 살려냄</label>
     <label class="chk"><input type="checkbox" data-job="soldier" ${c.soldier?'checked':''}> 🛡️ 호위무사 · 칼 한 번 막아냄</label>
-    <label class="chk"><input type="checkbox" data-job="judge" ${c.judge?'checked':''}> ⚖️ 최후 변론 후 찬반 투표 (끄면 최다 득표자 바로 송치)</label>
-    <label>${c.judge?'⚖️ 최후 변론 시간':'🕯️ 송치자 마지막 한마디 시간'}</label>${st('lastWords',c.lastWords?c.lastWords+'초':'없음')}
+    <label>⚖️ 최후 변론 시간 (끝나면 찬반 투표)</label>${st('lastWords',c.lastWords?c.lastWords+'초':'없음')}
     <label class="chk"><input type="checkbox" data-job="apply" ${c.apply?'checked':''}> 🗡️ 자객 지원 받기 (지금 지원자 ${V.applicants}명, 누군지는 비밀)</label>
     ${c.apply?`<label>지원자 당첨 가중치</label>${st('applyW',c.applyW+'배')}<div class="muted" style="margin-top:4px">${applyOdds(n,c.mafia,c.applyW)}</div>`:''}
     <label class="chk"><input type="checkbox" id="hp" ${c.hostPlays?'checked':''}> 집사(방장)도 게임에 참가</label>
