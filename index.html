@@ -707,7 +707,7 @@ function verdictHtml(){if(!V.cfg.apply||V.winner!=='M')return'';const vs=V.roles
   const others=V.roles.filter(p=>p.apply&&p.job!=='mafia');if(!vs.length&&!others.length)return'';
   return `<div class="sec-box center"><h3>🎁 기념품 수여식</h3>${vs.length?vs.map(p=>`<div style="font-size:19px;margin:4px 0"><b>${esc(p.name)}</b> — 자객으로 승리! 🎁 기념품을 받으세요</div>`).join(''):'<div class="muted">지원해서 자객이 된 사람은 없었습니다</div>'}
   ${others.length?`<div class="muted" style="margin-top:6px">지원했지만 뽑히지 않은 사람: ${others.map(p=>esc(p.name)).join(', ')}</div>`:''}</div>`}
-const QUICK=['👍 좋소','🙅 반대요','🤔 누구로 하오?','⚠️ 의원 조심','📜 어사부터 치자','🛡️ 내일 나를 감싸주시오'];
+const QUICK=['👍 좋소','🙅 반대요','🤔 누구로 하오?','⚠️ 의원 조심','📜 어사부터 치자','🛡️ 내일 나를 감싸주시오','🤐 내일은 조용히']; // 밀담 빠른 문구
 function chatHtml(){const c=V.chat||[];return `<div class="chat" id="chatbox">${c.length?c.map(m=>`<div><b>${esc(m.from)}</b> ${esc(m.text)}</div>`).join(''):'<div class="muted">동료 자객과 오늘 밤 작전을 짜보세요</div>'}</div>${me_alive()&&V.phase==='night'?`<div class="qk">${QUICK.map(q=>`<button class="qb" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>${(V.targets||[]).length?`<div class="qk"><span class="qt">🎯 노릴 사람</span>${V.targets.map(t=>`<button class="qb qn" data-q="${esc(pn(t))} 노리자">${esc(pn(t))}</button>`).join('')}</div>`:''}<div style="display:flex;gap:8px;margin-top:8px"><input id="chatin" maxlength="120" placeholder="속닥속닥"><button id="chatsend" class="wood" style="width:auto;flex:0 0 auto;margin:0;padding:0 18px">전송</button></div>`:'<div class="muted" style="margin-top:6px">밀담은 밤에만 보낼 수 있어요</div>'}`}
 
 /* ---- 내 메모 (암행어사 조사 결과는 내 폰에만 기록) ---- */
