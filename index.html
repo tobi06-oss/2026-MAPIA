@@ -495,7 +495,8 @@ let screen='home', nextAct=null, modal=null, modalArg=null;
 let tick=null;
 const STAGE_W=1024, STAGE_H=559;
 const INPUT_MODALS=['profile','join','chat'];
-function devicePortrait(){const sw=window.screen&&window.screen.width,sh=window.screen&&window.screen.height;const touch=matchMedia('(pointer:coarse)').matches;if(touch&&sw&&sh)return sw<sh;return innerHeight>innerWidth}
+// 아이폰은 screen.width/height가 돌려도 안 바뀌므로 실제 화면 방향으로 판단 (키보드가 떠도 안 흔들림)
+function devicePortrait(){const o=window.screen&&window.screen.orientation&&window.screen.orientation.type;if(o)return o.startsWith('portrait');if(typeof window.orientation==='number')return window.orientation===0||window.orientation===180;return innerHeight>innerWidth}
 function fit(){const st=$('#stage'),mr=$('#mroot');if(!st)return;const rot=devicePortrait();const W=rot?Math.max(innerHeight,innerWidth):innerWidth,H=rot?Math.min(innerHeight,innerWidth):innerHeight;
   const s=Math.min(W/STAGE_W,H/STAGE_H);const tf=`translate(-50%,-50%) ${rot?'rotate(90deg) ':''}scale(${s})`;st.style.transform=tf;
   // 세로로 든 폰에서 글을 입력할 땐 창을 똑바로 세워서 키보드 방향과 맞춤
