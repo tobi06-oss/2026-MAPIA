@@ -441,19 +441,19 @@ const HOE={
  wrongDoctor:['고택 유일의 의원 {n}, 멍석에 말리다… 이제 누가 고치나','침통 든 채 끌려간 의원 {n}, "다치면 알아서들 하시오!"'],
  wrongSoldier:['칼 한 번 못 뽑고! 호위무사 {n}, 식구 손에 송치'],
  tie:['갑론을박 끝에 무승부… 오늘도 멍석만 펴놓고 접었다','말만 무성한 공론, 멍석은 오늘도 쉰다'],
- night:[{t:'간밤의 비보! {n}, 측간 가다 변을 당하다',a:'h_night',m:1},'고택의 밤은 길었다… {n}, 아침 밥상에 안 나타나','장독대 뒤 그림자의 정체는? {n}, 자객의 손에 쓰러지다','"잠깐 바람 좀 쐬고 오리다" {n}의 마지막 말이었다'],
+ night:[{t:'간밤의 비보! {n}, 측간 가다 변을 당하다',a:'h_night',m:1},{t:'야밤의 추격전! {n}, 끝내 자객을 따돌리지 못하다',a:'h_night_sunbi',m:1},{t:'간밤 피습! {n}, 자객의 칼끝에 쓰러지다',a:'h_night_F',f:1},{t:'촛불 아래 날아든 칼날! {n}, 간밤 피습',a:'h_night_F',f:1},'고택의 밤은 길었다… {n}, 아침 밥상에 안 나타나','장독대 뒤 그림자의 정체는? {n}, 자객의 손에 쓰러지다','"잠깐 바람 좀 쐬고 오리다" {n}의 마지막 말이었다'],
  nightPolice:['마패만 덩그러니… 암행어사 {n}, 자객 손에 쓰러지다','신분이 들통났나! 잠복 중이던 암행어사 {n} 피습'],
  nightDoctor:['의원이 아프면 누가 고치나! 의원 {n} 피습','남은 고치고 저는 못 고쳤다… 의원 {n}, 간밤에 쓰러지다'],
  nightSoldier:['두 번은 못 막았다! 호위무사 {n}, 끝내 쓰러지다'],
  saved:['의원의 침 한 방! 저승 문턱에서 누군가 돌아왔다','자객 헛걸음! 의원이 먼저 와 있었다',{t:'저승사자도 의원 앞에선 빈손으로 돌아갔다',a:'h_saved'}],
  soldier:['호위무사 {n}, 맨손으로 자객을 튕겨내다!','자객의 칼이 휘었다! 호위무사 {n}의 쇠 같은 몸'],
  none:['자객도 졸았나? 고택에 고요한 밤','간밤엔 개 짖는 소리뿐… 모두 무사하다']};
-function hoe(k,p){const L=[];HOE[k].forEach(x=>{const o=typeof x==='string'?{t:x}:x;if(o.m&&p&&p.gender==='F')return; // m:1 = 남자 전용 그림
+function hoe(k,p){const L=[];HOE[k].forEach(x=>{const o=typeof x==='string'?{t:x}:x;if(o.m&&p&&p.gender==='F'||o.f&&!(p&&p.gender==='F'))return; // m:1 남자 전용 · f:1 여자 전용 그림
     for(let i=0;i<(o.a?3:1);i++)L.push(o)});const o=pick(L);
   return {t:o.t.replace(/\{n\}/g,p?p.name:'').replace(/\{f\}/g,p&&p.flavor?p.flavor.n:''),a:o.a||null}}
 function hoeVote(p){if(p.role==='M')return hoe(p.flavor&&Math.random()<.5?'caughtCover':'caught',p);
   const sp=null;return hoe(sp&&Math.random()<.7?sp:'wrong',p)}
-function hoeNight(p){if(sbKey(p.flavor)==='낙방한 선비')return {t:`낙방한 선비 피습! ${p.name}, 과거 길 대신 저승길에 오르다`,a:'h_night_sunbi'};if(sbKey(p.flavor)==='이웃집 할매')return {t:`이웃집 할매 피습! ${p.name}, 자객의 칼끝에 쓰러지다`,a:'h_night_F'};if(p.gender==='F')return {t:`간밤 피습! ${p.name}, 자객의 습격을 받다`,a:'h_night_F'};return hoe('night',p)}
+function hoeNight(p){return hoe('night',p)} // 신분은 숨기고 이름만(그림은 성별대로 무작위)
 function startDay(){G.round++;G.phase='day';G.endAt=Date.now()+G.cfg.minutes*60000;G.votes={};G.revote=false}
 function startVote(revote){G.phase='vote';G.votes={};G.revote=revote;if(!revote)G.cands=aliveP().map(p=>p.token)}
 function hostTimer(){if(G&&G.phase==='day'&&Date.now()>=G.endAt){startVote(false);hostSave();broadcast()}if(G&&G.phase==='defense'&&Date.now()>=G.endAt){G.phase='judge';hostSave();broadcast()}botTick()}
@@ -700,7 +700,7 @@ function spreadHtml(){
   const emo={caught:'⛓️',wrong:'😢',night:'💀',saved:'🌿',soldier:'🛡️',none:'🌙',tie:'🤝',spared:'⚖️'}[kind];
   const PG=tok&&(V.players.find(p=>p.token===tok)||{}).gender; // 억울한 송치: 여 ①② / 남 그림을 성별대로, 측간 그림은 남자만
   let fbArt={tie:modal==='result'&&V.result&&!V.result.revote?'h_tie':null,soldier:'h_soldier',none:'h_none',caught:'h_caught',wrong:'h_wrong',night:PG==='F'?'h_night_F':'h_night',saved:'h_saved'}[kind],ak=head.a&&ART[head.a]?head.a:(job==='police'&&kind==='wrong'?'h_police':job==='doctor'&&kind==='night'?'h_nightDoctor':job==='police'&&kind==='night'?'h_nightPolice':fbArt);
-  const ALT={h_wrong:PG==='F'?['h_wrong','h_wrong_F2']:PG==='M'?['h_wrong2']:['h_wrong','h_wrong2','h_wrong_F2']}[ak];if(ALT)ak=ALT[hsh(head.t+V.round+(tok||''))%ALT.length];
+  const ALT={h_night:head.a?null:['h_night','h_night_sunbi'],h_wrong:PG==='F'?['h_wrong','h_wrong_F2']:PG==='M'?['h_wrong2']:['h_wrong','h_wrong2','h_wrong_F2']}[ak];if(ALT)ak=ALT[hsh(head.t+V.round+(tok||''))%ALT.length];
   const pic=ak&&ART[ak]?`<img src="${ART[ak]}" alt="">`:`<div class="efb" style="background-image:url('${stageBg()}')"></div>`;
   const q=QUIP[kind][hsh(head.t)%QUIP[kind].length];
   const P=tok&&V.players.find(p=>p.token===tok);const J=JOBS[job]||JOBS.citizen;
