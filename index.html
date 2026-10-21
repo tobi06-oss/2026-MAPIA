@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="자객 소동"><meta name="theme-color" content="#0c0b0f"><link rel="apple-touch-icon" href="img/icon-180.png">
 <title>종갓집 자객 소동</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Hahmlet:wght@500;600;700;800&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
@@ -13,6 +14,7 @@ input{-webkit-user-select:text;user-select:text}
 #stage{position:absolute;left:50%;top:50%;width:1024px;height:559px;transform-origin:center;background:#1a1a22 url(img/main.jpg) center/100% 100% no-repeat;overflow:hidden;color:#f3e6c8}
 #stage:after{content:"";position:absolute;inset:0;background:rgba(5,8,25,0);pointer-events:none;transition:background .8s;z-index:1}
 #stage.night:after{background:rgba(5,8,25,.42)}
+.iostip{margin:0 50px 10px 0;font-size:13px;line-height:1.5;color:#5a4630;background:rgba(255,248,230,.7);border:1px dashed #b89a6a;border-radius:8px;padding:6px 10px}
 #stage>*{z-index:2}
 #mroot{position:absolute;left:50%;top:50%;width:1024px;height:559px;transform-origin:center;pointer-events:none;color:#f3e6c8}
 #mroot>*{pointer-events:auto}
@@ -760,6 +762,9 @@ function hudHtml(){const alive=V.players.filter(p=>p.alive).length;
   return `<div class="hud dark">${V.round?`${V.round}일째 | `:''}생존자: ${alive} / ${V.players.length}${V.phase!=='lobby'&&V.mafiaLeft!=null?` | <span class="rd">자객: ${V.mafiaLeft}명 남음</span>`:''}</div>
   <div class="hud2 dark">${phaseTxt}${V.phase==='day'?': <span class="tm"></span>':''}${V.phase==='vote'?` ${V.voted}/${V.voters}`:''}${V.phase==='defense'?': <span class="tm"></span>':''}${V.phase==='judge'?` ${V.jvoted}/${V.jneed}`:''}${V.phase==='result'&&V.lastWords?` · 마지막 한마디 <span class="tm"></span>`:''}</div>`}
 let chatOpen=true;
+// 아이폰 사파리는 웹페이지의 전체 화면을 막아둬서, 홈 화면에 추가해 앱처럼 열도록 안내
+const IOS=/iP(hone|od)/.test(navigator.userAgent)||(/Mac/.test(navigator.userAgent)&&navigator.maxTouchPoints>1),STANDALONE=navigator.standalone||matchMedia('(display-mode: standalone),(display-mode: fullscreen)').matches;
+function iosTip(){return IOS&&!STANDALONE?`<div class="iostip">🍎 <b>아이폰은 입장 전에!</b> 공유 버튼 → <b>홈 화면에 추가</b> → 생긴 아이콘으로 열면 전체 화면이에요. 거기서 문패 <b>${esc((V&&V.code)||params.get('room')||'')}</b>를 넣고 입장하세요. (간단히: 주소창 메뉴 → <b>도구 막대 가리기</b>)</div>`:''}
 function cnote(a,b,c){return `<div class="bigres cnote dark"><div class="br-n">${a}</div>${b?`<div class="br-v ${c||''}">${b}</div>`:''}</div>`}
 function chatPanelHtml(){const c=(V.chat||[]).slice(-3);
   return `<div class="cpanel dark"><div class="cp-h">🤫 자객 밀담 <span>${V.myNight?`✅ ${esc(pn(V.myNight))} 선택함`:'노릴 사람을 누르면 동료에게 알리고 바로 고를 수 있어요'}</span><button class="cp-x" id="cp-close">접기 ✕</button></div>
@@ -835,11 +840,11 @@ function bottomBox(){
 /* ---- 두루마리 창 ---- */
 function modalHtml(){const c=V&&V.cfg;
   switch(modal){
-  case 'profile':return `<h2>✏️ 내 호패 정보</h2><label>내 이름</label><input id="nm" maxlength="12" value="${esc(LS.get('mafia-name')||'')}" placeholder="이름 (예: 김아씨, 박도령)">
+  case 'profile':return `${nextAct==='join'?iosTip():''}<h2>✏️ 내 호패 정보</h2><label>내 이름</label><input id="nm" maxlength="12" value="${esc(LS.get('mafia-name')||'')}" placeholder="이름 (예: 김아씨, 박도령)">
     <label>성별 (신분 카드를 맞춰 드려요)</label><div class="gsel"><button type="button" data-g="F" class="${LS.get('mafia-gender')==='F'?'on':''}"><img class="face gs" src="${avatarSvg('F',1)}" alt=""> 여 · 아씨</button><button type="button" data-g="M" class="${LS.get('mafia-gender')==='M'?'on':''}"><img class="face gs" src="${avatarSvg('M',0)}" alt=""> 남 · 도령</button></div>
     <label>한마디 소개 (처음 만난 사이니까!)</label><input id="it" maxlength="30" value="${esc(LS.get('mafia-intro')||'')}" placeholder="예: 00년생 / 커피 없으면 못 사는 ENFP">
     <div class="err">${esc(errMsg)}</div><button class="red" id="save-profile">${nextAct==='host'?'저장하고 고택 열기':nextAct==='practice'?'저장하고 연습 시작':nextAct==='join'?'저장하고 입장하기':'저장'}</button>`;
-  case 'join':return `<h2>🚪 고택 입장</h2><label>고택 문패 (집사에게 받은 4자리 코드)</label><input id="cd" maxlength="4" style="text-transform:uppercase;letter-spacing:8px;font-size:26px;text-align:center" value="${esc(params.get('room')||'')}" placeholder="ABCD">
+  case 'join':return `${iosTip()}<h2>🚪 고택 입장</h2><label>고택 문패 (집사에게 받은 4자리 코드)</label><input id="cd" maxlength="4" style="text-transform:uppercase;letter-spacing:8px;font-size:26px;text-align:center" value="${esc(params.get('room')||'')}" placeholder="ABCD">
     <div class="muted" style="margin-top:8px">${esc(LS.get('mafia-name')||'')} (으)로 입장합니다</div><div class="err">${esc(errMsg)}</div><button class="red" id="jn">입장하기</button>`;
   case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-invite','📱 초대 (QR)'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${!V?btn('go-practice','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}${isHost&&V?btn('m-handover','👑 집사 넘기기'):''}${V?btn('quit','🚪 고택 나가기'):''}${isHost&&V&&(V.phase==='lobby'||V.players.some(p=>String(p.token).startsWith('bot-')))?btn('m-test','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}</div>
     <div class="muted" style="margin-top:12px">🧪 테스트 모드: 컴퓨터 식구 9명과 한 판을 돌려 화면을 미리 볼 수 있어요. 컴퓨터 식구는 지목과 밤 행동을 알아서 해요. 토론은 집사 버튼으로 바로 끝낼 수 있어요.<br>소리는 집사 폰에서 크게 틀어두는 걸 추천해요(배경음악은 집사 폰만 기본으로 켜져요).<br>폰을 가로로 돌리면 화면이 크게 보여요. 화면 회전이 잠겨 있으면 자동으로 눕혀서 보여드려요.</div>`;
