@@ -975,12 +975,12 @@ const PENTA=[196,220,262,294,330,392,440,523,587];
 function bgmStep(){if(!SND.ctx||!SND.bgm)return;const t=SND.ctx.currentTime+.05;
   if(SND.mode==='day'){if(!SND.i)SND.i=4;SND.i=Math.max(0,Math.min(PENTA.length-1,SND.i+[-2,-1,-1,0,1,1,2][Math.floor(Math.random()*7)]));pluck(PENTA[SND.i],t,.5);if(Math.random()<.25)pluck(PENTA[Math.max(0,SND.i-2)]/2,t+.18,.35);if(Math.random()<.15)pluck(PENTA[SND.i],t+.32,.25)}
   else if(SND.mode==='night'){if(Math.random()<.35)pluck([98,110,131,147][Math.floor(Math.random()*4)],t,.45);if(Math.random()<.12)[2093,3136].forEach((f,i)=>tone(f,t+i*.09,.005,.05,2.4,'sine',null,SND.bgm));if(Math.random()<.04)sfx('owl',true)}}
-// 배경음악: 집사가 올린 국악 음원(snd/bgm.mp3)을 반복 재생. 밤에는 조금 작게
+// 배경음악: 집사가 올린 국악 음원(snd/bgm.mp3)을 반복 재생
 function bgmSet(mode){if(!sndPref('bgm'))mode=null;if(!mode){bgmStop();return}
   if(!SND.el){SND.el=new Audio('snd/bgm.mp3');SND.el.loop=true;SND.el.preload='auto'}
-  SND.mode=mode;SND.el.volume=mode==='night'?.3:.45;if(SND.el.paused){const p=SND.el.play();if(p&&p.catch)p.catch(()=>{if(SND.waitTap)return;SND.waitTap=1;document.addEventListener('pointerdown',()=>{SND.waitTap=0;bgmForPhase()},{once:true})})}}
+  SND.mode=mode;SND.el.volume=.45;if(SND.el.paused){const p=SND.el.play();if(p&&p.catch)p.catch(()=>{if(SND.waitTap)return;SND.waitTap=1;document.addEventListener('pointerdown',()=>{SND.waitTap=0;bgmForPhase()},{once:true})})}}
 function bgmStop(){SND.mode=null;if(SND.el)SND.el.pause()}
-function bgmForPhase(){if(!V){bgmStop();return}bgmSet(V.phase==='night'?'night':['end'].includes(V.phase)?null:'day')}
+function bgmForPhase(){if(!V){bgmStop();return}bgmSet(V.phase==='night'?'night':V.phase==='lobby'?'day':null)} // 대기실과 밤에만(밤엔 폰 만지는 기척을 가려줌), 토론 중엔 조용히
 let lastBeat=null;
 
 /* ===== 시작: 새로고침해도 이어하기 ===== */
