@@ -418,7 +418,7 @@ function hostMsg(cid,m){
         askTakeover(cid,m.token,old);return HT.send(cid,{t:'wait',msg:'집사가 자리 이어받기를 허락하면 들어갑니다…'})}
       if(!name)return HT.send(cid,{t:'err',msg:'이름을 입력하세요'});
       if(G.players.some(p=>p.name===name))return HT.send(cid,{t:'err',msg:'같은 이름이 있어요'});
-    }
+    }else if(G.phase==='lobby'&&name&&G.players.some(p=>p.name===name&&p!==ex))return HT.send(cid,{t:'err',msg:'같은 이름이 있어요'});
     addPlayer(m.token,ex&&G.phase!=='lobby'?ex.name:(name||ex.name),m.intro,G.phase==='lobby'?m.gender:undefined);
     conn2tok[cid]=m.token;G.players.find(p=>p.token===m.token).online=true;
     hostSave();broadcast();return}
@@ -926,7 +926,7 @@ function modalHtml(){const c=V&&V.cfg;
     <div class="err">${esc(errMsg)}</div><button class="red" id="save-profile">${nextAct==='host'?'저장하고 고택 열기':nextAct==='practice'?'저장하고 연습 시작':nextAct==='join'?'저장하고 입장하기':'저장'}</button>`;
   case 'join':return `${iosTip()}<h2>🚪 고택 입장</h2><label>고택 문패 (집사에게 받은 4자리 코드)</label><input id="cd" maxlength="4" style="text-transform:uppercase;letter-spacing:8px;font-size:26px;text-align:center" value="${esc(params.get('room')||'')}" placeholder="ABCD">
     <div class="muted" style="margin-top:8px">${esc(LS.get('mafia-name')||'')} (으)로 입장합니다</div><div class="err">${esc(errMsg)}</div><button class="red" id="jn">입장하기</button>`;
-  case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-invite','📱 초대 (QR)'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${!V?btn('go-practice','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}${isHost&&V?btn('m-handover','👑 집사 넘기기'):''}${V?btn('quit','🚪 고택 나가기'):''}${isHost&&V&&(V.phase==='lobby'||V.players.some(p=>String(p.token).startsWith('bot-')))?btn('m-test','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}</div>
+  case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V||V.phase==='lobby'?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-invite','📱 초대 (QR)'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${!V?btn('go-practice','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}${isHost&&V?btn('m-handover','👑 집사 넘기기'):''}${V?btn('quit','🚪 고택 나가기'):''}${isHost&&V&&(V.phase==='lobby'||V.players.some(p=>String(p.token).startsWith('bot-')))?btn('m-test','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}</div>
     <div class="muted" style="margin-top:12px">🧪 테스트 모드: 컴퓨터 식구 9명과 한 판을 돌려 화면을 미리 볼 수 있어요. 컴퓨터 식구는 지목과 밤 행동을 알아서 해요. 토론은 집사 버튼으로 바로 끝낼 수 있어요.<br>소리는 집사 폰에서 크게 틀어두는 걸 추천해요(배경음악은 집사 폰만 기본으로 켜져요).<br>폰을 가로로 돌리면 화면이 크게 보여요. 화면 회전이 잠겨 있으면 자동으로 눕혀서 보여드려요.</div>`;
   case 'rules':return `<h2>📜 놀이 방법</h2><div class="rules"><b>🎯 목표</b><br>🏮 종갓집: 숨어든 자객을 모두 관아로 송치하면 승리<br>🗡️ 자객패: 자객 수가 식구 수와 같아지면 승리<br><br>
     <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람이 최후 변론을 하고, 모두 찬반 투표로 송치 여부를 정해요. 찬성이 더 많으면 관아로 송치되고 정체가 드러나요. 지목이 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 고개를 숙이고 폰으로 몰래 움직여요. 자객·암행어사·의원은 제 할 일을, 나머지 식구는 '수상한 사람 찍기'(이름+짧은 이유, 아침에 익명 공개)를 해요. 그래서 폰을 만지는 기척만으로는 자객을 알 수 없어요.<br>6. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
@@ -957,7 +957,7 @@ function modalHtml(){const c=V&&V.cfg;
   case 'player':{const p=V.players.find(x=>x.token===modalArg);if(!p)return '';
     return `<div class="center">${faceImg(p,'big')}</div><h2 class="center">${esc(p.name)}</h2>${p.intro?`<div style="font-size:20px;margin:10px 0">“${esc(p.intro)}”</div>`:'<div class="muted">한마디 소개가 없어요</div>'}${!p.alive&&p.rev?revealHtml(p.rev.job,p.rev.flavor):''}${isHost&&V.phase==='lobby'&&p.token!==myToken?btn('kick','내보내기'):''}${isHost&&p.alive&&!['lobby','end'].includes(V.phase)?btn('outp','🚪 자리 비움 처리'):''}${isHost&&canHand(p)?`<button class="wood" data-ho="${p.token}">👑 이 사람에게 집사 넘기기</button>`:''}`}
   case 'handover':{const L=V.players.filter(canHand);return `<h2>👑 집사 넘기기</h2><div class="muted">넘겨받을 사람을 고르시오. 접속 중인 사람만 받을 수 있어요. 놀이는 지금 상태 그대로 이어져요.</div><div class="mgrid" style="margin-top:10px">${L.length?L.map(p=>`<button class="wood" data-ho="${p.token}">${esc(p.name)}</button>`).join(''):'<div class="muted">접속 중인 사람이 없어요</div>'}</div>`}
-  case 'card':return V.me&&V.me.role?`<div class="center" id="rolecard"><div class="muted">${esc(V.me.name)}님의 호패 · <b>누르고 있는 동안만</b> 보여요</div>${jobCard(V.me,peekRole)}${V.me.alive?'':'<div class="muted" style="margin-top:8px">💀 탈락했습니다 (관전만, 말하면 안 돼요!)</div>'}</div>`:`<div class="center" style="padding:18px 0"><div style="font-size:46px">📜</div><h2>아직 호패를 받지 않았어요</h2><div class="muted">집사가 놀이를 시작하면 호패(직업)가 나눠져요. 그때 다시 눌러 확인하세요.</div></div>`;
+  case 'card':return V.me&&V.me.role?`<div class="center" id="rolecard"><div class="muted">${esc(V.me.name)}님의 호패 · <b>누르고 있는 동안만</b> 보여요</div>${jobCard(V.me,peekRole)}${V.me.alive?'':'<div class="muted" style="margin-top:8px">💀 탈락했습니다 (관전만, 말하면 안 돼요!)</div>'}</div>`:`<div class="center" style="padding:18px 0"><div style="font-size:46px">📜</div><h2>아직 호패를 받지 않았어요</h2><div class="muted">집사가 놀이를 시작하면 호패(직업)가 나눠져요. 그때 다시 눌러 확인하세요.</div>${V&&V.phase==='lobby'?`<div style="margin-top:14px">${btn('go-profile','✏️ 내 이름·소개 고치기')}</div>`:''}</div>`;
   case 'rtally':return V.result?`<h2>📊 ${V.round}일째 지목 현황</h2>${tallyHtml(V.result.tally,true)}`:'';
   case 'test':{const hb=V.players.some(p=>String(p.token).startsWith('bot-'));return `<h2>🧪 테스트 모드</h2><div class="muted">집사에게만 보여요. 컴퓨터 식구로 빈자리를 채워 혼자 돌려볼 수 있어요.</div>${V.phase==='lobby'?`<div class="mgrid">${btn('bots-add','🤖 컴퓨터 식구 채우기')}${hb?btn('bots-del','🤖 컴퓨터 식구 내보내기'):''}</div>`:''}${hb?`<h3>장면 바로 보기</h3><div class="muted">누르면 그 장면으로 바로 넘어갑니다.</div><h3>게임 중</h3><div class="mgrid">${SCENES.slice(0,10).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><h3>결말</h3><div class="mgrid">${SCENES.slice(10).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><button class="red" id="test-lobby" style="margin-top:14px">↩️ 대기실로 돌아가기</button>`:''}`}
   case 'chat':return `<h2>🤫 자객들의 밀담</h2>${chatHtml()}`;
@@ -985,7 +985,7 @@ function bind(){
   on('#bots-add','click',()=>{addBots(G.cfg.total||10);modal=null;draw()});on('#bots-del','click',()=>{removeBots();modal=null;draw()});
   on('#go-host','click',()=>{errMsg='';if(needProfile()){nextAct='host';return openM('profile')}startHostFlow()});
   on('#go-join','click',()=>{errMsg='';if(needProfile()){nextAct='join';return openM('profile')}openM('join')});
-  on('#ppanel','click',()=>{if(!V){nextAct=null;openM('profile')}else if(V.me)openM('player',V.me.token)});
+  on('#ppanel','click',()=>{if(!V||V.phase==='lobby'){nextAct=null;openM('profile')}else if(V.me)openM('player',V.me.token)});
   on('#go-profile','click',()=>{nextAct=null;openM('profile')});
   on('#cornerL','click',()=>{if(!inGameNow())return openM('dex');openM('card')});
   on('#cornerR','click',()=>openM('menu'));
@@ -998,6 +998,8 @@ function bind(){
   on('#fs','click',()=>{const d=document.documentElement;try{(d.requestFullscreen||d.webkitRequestFullscreen).call(d);window.screen.orientation&&window.screen.orientation.lock&&window.screen.orientation.lock('landscape').catch(()=>{})}catch(e){}});
   $$('[data-g]').forEach(b=>b.onclick=()=>{keepForm();LS.set('mafia-gender',b.dataset.g);draw()});
   on('#save-profile','click',()=>{const n=$('#nm').value.trim();if(!n||!LS.get('mafia-gender')){errMsg='이름과 성별을 입력하세요';return draw()}LS.set('mafia-name',n);LS.set('mafia-intro',$('#it').value.trim());errMsg='';
+    if(V&&V.phase==='lobby'){const m={t:'join',token:myToken,name:n,intro:LS.get('mafia-intro')||'',gender:LS.get('mafia-gender')}; // 대기실에서 고친 정보는 고택에 다시 알림
+      if(isHost){if(G.players.some(p=>p.name===n&&p.token!==myToken)){errMsg='같은 이름이 있어요';return draw()}addPlayer(myToken,n,m.intro,m.gender);hostSave();broadcast()}else CT&&CT.send(m)}
     if(nextAct==='host')return startHostFlow();if(nextAct==='practice')return startHostFlow(true);if(nextAct==='join')return openM('join');modal=null;draw()});
   on('#jn','click',()=>{const n=LS.get('mafia-name')||'',c=$('#cd').value.trim();if(c.length!==4){errMsg='4자리 문패 코드를 입력하세요';return draw()}modal=null;isHost=false;screen='game';waitPeer(()=>{if(!LOCAL&&!window.Peer){errMsg='연결 라이브러리를 못 불러왔어요. 인터넷을 확인하세요';screen='home';modal='join';return draw()}clientStart(c,n);draw()})});
   on('#home','click',()=>{LS.del('mafia-role');location.reload()});
@@ -1017,7 +1019,8 @@ function bind(){
   on('#next','click',()=>cmd('next'));on('#endnight','click',async()=>{if(await askBox({title:'닭 울리기',msg:'밤 행동을 다 기다리지 않고 날을 밝히시겠소?',ok:'날을 밝히오',no:'더 기다리기'}))cmd('endnight')});
   on('#lobby','click',()=>cmd('lobby'));
   on('#savecard','click',()=>saveCard());on('#judge','click',()=>cmd('judge'));on('#endjudge','click',async()=>{if(await askBox({title:'개표',msg:'아직 투표하지 않은 식구가 있어도 개표하시겠소?',ok:'개표하오',no:'더 기다리기'}))cmd('endjudge')});
-  const jv=async v=>{if(!await askBox({title:v==='y'?'⛓️ 송치 찬성':'🙏 송치 반대',msg:`${V.accName}님 송치에 ${v==='y'?'찬성':'반대'}하시겠소?`,sub:'한 번 찍은 도장은 되돌릴 수 없소.',ok:'도장 찍기',no:'다시 생각하기'}))return;if(V.phase==='judge')act({t:'jv',v});sfx('stamp')};on('#jy','click',()=>jv('y'));on('#jn','click',()=>jv('n'));
+  const jv=async v=>{if(!V||V.phase!=='judge')return; // #jn은 입장 모달의 '입장하기' 버튼과 id가 겹침
+    if(!await askBox({title:v==='y'?'⛓️ 송치 찬성':'🙏 송치 반대',msg:`${V.accName}님 송치에 ${v==='y'?'찬성':'반대'}하시겠소?`,sub:'한 번 찍은 도장은 되돌릴 수 없소.',ok:'도장 찍기',no:'다시 생각하기'}))return;if(V.phase==='judge')act({t:'jv',v});sfx('stamp')};on('#jy','click',()=>jv('y'));on('#jn','click',()=>jv('n'));
   on('#share','click',()=>{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');if(navigator.share)navigator.share({title:'종갓집 자객 소동',text:'고택 문패 '+V.code,url:link}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>alertBox('초대 링크를 복사했소. 단톡방에 붙여 넣으시오.','초대장'))});
   $$('[data-slot]').forEach(b=>b.onclick=()=>{const t=b.dataset.slot;if(selectable().includes(t)){voteSel=t;return draw()}openM('player',t)});
   on('#sub','click',async()=>{if(!voteSel)return;const tp=V.players.find(p=>p.token===voteSel);if(!await askBox({title:'멍석말이 지목',face:tp?faceImg(tp):'',msg:`${pn(voteSel)}님을 지목하시겠소?`,sub:'한 번 찍은 도장은 되돌릴 수 없소.',ok:'도장 찍기',no:'다시 생각하기'}))return;if(!voteSel)return;act({t:'vote',target:voteSel});sfx('stamp');voteSel=null});
