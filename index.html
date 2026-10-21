@@ -366,7 +366,8 @@ function hostAct(tok,m){
     if(tgt&&tgt.alive){const N=G.night;
       if(p.job==='mafia'&&!(tok in N.mafia)&&tgt.role!=='M')N.mafia[tok]=m.target;
       if(p.job==='police'&&!N.police&&tgt!==p)N.police={target:m.target,isM:tgt.role==='M'};
-      if(p.job==='doctor'&&!N.doctor)N.doctor=m.target;
+      if(p.job==='doctor'&&!N.doctor)N.doctor=m.target;N.sus=N.sus||{};
+        if(!['mafia','police','doctor'].includes(p.job)&&!(tok in N.sus)&&tgt!==p)N.sus[tok]=m.target;
       if(nightLeft()===0)resolveNight()}}
   if(m.t==='jv'&&G.phase==='judge'&&p.alive&&tok!==G.accused&&!(tok in G.jv)&&(m.v==='y'||m.v==='n')){G.jv[tok]=m.v;if(judgeVoters().every(x=>x.token in G.jv))resolveJudge()}
   if(m.t==='chat'&&p.role==='M'&&p.alive&&G.phase==='night'){const t=String(m.text||'').trim().slice(0,120);if(t)G.chat.push({from:p.name,text:t,round:G.round})}
@@ -487,8 +488,8 @@ function botTick(){if(!G||Date.now()<botNext)return;const bots=aliveP().filter(i
   if(G.phase==='vote'){const b=bots.find(b=>!(b.token in G.votes));if(!b)return;
     let c=G.cands.filter(t=>t!==b.token);if(b.role==='M'){const cc=c.filter(t=>G.players.find(p=>p.token===t).role!=='M');if(cc.length)c=cc}
     botNext=Date.now()+400+Math.random()*900;hostAct(b.token,{t:'vote',target:pick(c)})}
-  else if(G.phase==='night'){const N=G.night;const b=bots.find(b=>b.job==='mafia'?!(b.token in N.mafia):b.job==='police'?!N.police:b.job==='doctor'?!N.doctor:false);if(!b)return;
-    const al=aliveP();let c=b.job==='mafia'?al.filter(p=>p.role!=='M'):b.job==='police'?al.filter(p=>p!==b):al;
+  else if(G.phase==='night'){const N=G.night;const b=bots.find(b=>b.job==='mafia'?!(b.token in N.mafia):b.job==='police'?!N.police:b.job==='doctor'?!N.doctor:!(b.token in (N.sus=N.sus||{})));if(!b)return;
+    const al=aliveP();let c=b.job==='mafia'?al.filter(p=>p.role!=='M'):b.job==='doctor'?al:al.filter(p=>p!==b);
     if(b.job==='mafia'){const prev=Object.values(N.mafia)[0];if(prev)c=c.filter(p=>p.token===prev).concat(c).slice(0,1)}
     botNext=Date.now()+600+Math.random()*1200;hostAct(b.token,{t:'night',target:pick(c).token})}}
 function countVotes(){
@@ -507,9 +508,9 @@ function judgeVoters(){return aliveP().filter(p=>p.token!==G.accused)}
 function resolveJudge(){const r=G.first,p=G.players.find(x=>x.token===G.accused),vs=Object.values(G.jv),y=vs.filter(v=>v==='y').length,n=vs.length-y;r.jy=y;r.jn=n;
   if(y>n){sendOff(p,r);r.noLW=true}else{r.spared=p.token;r.head={t:pick([`"살려주시오!" 눈물의 변론, ${p.name} 멍석에서 풀려나`,`찬반 투표 뒤집혔다! ${p.name}, 관아 문턱에서 귀가`,`${p.name}의 명변론에 사랑방 숙연… 송치 부결`])};G.log.push(`${G.round}일째 공론: ${p.name} 찬반 투표로 방면 (찬성 ${y} · 반대 ${n})`)}
   G.result=r;G.phase='result';G.accused=null}
-function startNight(){G.phase='night';G.night={mafia:{},police:null,doctor:null}}
-function nightActors(){return aliveP().filter(p=>['mafia','police','doctor'].includes(p.job))}
-function nightLeft(){const N=G.night;return nightActors().filter(p=>p.job==='mafia'?!(p.token in N.mafia):p.job==='police'?!N.police:!N.doctor).length}
+function startNight(){G.phase='night';G.night={mafia:{},police:null,doctor:null,sus:{}}}
+function nightActors(){return aliveP()} // 식구도 모두 폰으로 '수상한 사람 찍기' → 폰 만지는 기척으로 자객을 알 수 없게
+function nightLeft(){const N=G.night;N.sus=N.sus||{};return nightActors().filter(p=>p.job==='mafia'?!(p.token in N.mafia):p.job==='police'?!N.police:p.job==='doctor'?!N.doctor:!(p.token in N.sus)).length}
 function resolveNight(){
   const N=G.night;const cnt={};Object.values(N.mafia).forEach(t=>cnt[t]=(cnt[t]||0)+1);const mx=Math.max(0,...Object.values(cnt));
   const top=Object.keys(cnt).filter(k=>cnt[k]===mx);let k=top.length?pick(top):null;
@@ -518,8 +519,10 @@ function resolveNight(){
   else if(N.doctor===k){news=pick(NEWS_SAVED);head=hoe('saved');G.log.push(`${G.round}일째 자시: 의원이 습격을 막음`)}
   else if(p.armor>0){p.armor--;news=pick(NEWS_SOLDIER).replace('{n}',p.name);head=hoe('soldier',p);G.log.push(`${G.round}일째 자시: ${p.name} 습격을 막아냄`)}
   else{p.alive=false;p.out={n:G.outN=(G.outN||0)+1,r:G.round,how:'night'};dead=k;head=hoeNight(p);news=pick(NEWS_DEAD).replace('{n}',p.name);G.log.push(`${G.round}일째 자시: ${p.name} 당함`)}
-  G.result={nightDead:dead,news,head,job:dead&&p.job,flavor:dead&&p.flavor};G.phase='morning';
+  G.result={nightDead:dead,news,head,job:dead&&p.job,flavor:dead&&p.flavor,sus:topSus(N.sus,dead)};G.phase='morning';
 }
+function topSus(S,dead){const c={};Object.values(S||{}).forEach(t=>{if(t!==dead)c[t]=(c[t]||0)+1});const mx=Math.max(0,...Object.values(c));if(!mx)return null;const top=Object.keys(c).filter(k=>c[k]===mx);
+  const r={names:top.map(pname),n:mx};G.log.push(`${G.round}일째 자시: 가장 의심받은 이 ${r.names.join(', ')} (${mx}표)`);return r}
 function endGame(w){G.winner=w;G.phase='end';const st=G.stats||{wrong:0,mafia0:0},al=aliveP(),mL=al.filter(p=>p.role==='M').length;
   G.ending=w==='M'?(st.mafia0>1&&mL===st.mafia0?'m_perfect':st.mafia0>1&&mL===1?'m_last':st.wrong>=3?'m_wrong':'m_fool')
     :(st.wrong===0?'c_perfect':G.round<=2?'c_fast':al.length<=3?'c_pyrrhic':al.some(p=>p.job==='police')?'c_amhaeng':'c_win');G.pobak=w==='M'?'':(G.round<=5?'짐도 못 푼':['어설픈','허술한','연기력이 형편없는'][Math.floor(Math.random()*3)]);G.log.push(w==='M'?'자객패 승리':'종갓집 승리')}
@@ -537,13 +540,14 @@ function viewFor(tok){
     if(p.job==='mafia'){v.targets=aliveP().filter(x=>x.role!=='M').map(x=>x.token);v.myNight=N.mafia[tok];
       v.mateNight=Object.entries(N.mafia).filter(([k])=>k!==tok).map(([k,t])=>`${pname(k)} → ${pname(t)}`)}
     if(p.job==='police'){v.targets=aliveP().filter(x=>x!==p).map(x=>x.token);if(N.police)v.myNight=N.police.target,v.police=N.police.isM}
-    if(p.job==='doctor'){v.targets=aliveP().map(x=>x.token);v.myNight=N.doctor}}
+    if(p.job==='doctor'){v.targets=aliveP().map(x=>x.token);v.myNight=N.doctor}
+    if(!['mafia','police','doctor'].includes(p.job)){v.targets=aliveP().filter(x=>x!==p).map(x=>x.token);v.myNight=(N.sus||{})[tok];v.susPick=true}}
   if(p&&p.role==='M')v.chat=g.chat.slice(-40);
   if(g.phase==='result'&&g.result.dead&&!g.result.noLW)v.lastWords=g.cfg.lastWords;
   if(g.phase==='result'&&g.result.spared)v.result.sparedName=pname(g.result.spared);
   if(g.phase==='defense'||g.phase==='judge'){v.accused=g.accused;v.accName=pname(g.accused);v.firstTally=tally(g.first.votes,g.first.cands)}
   if(g.phase==='judge'){v.jvoted=Object.keys(g.jv).length;v.jneed=judgeVoters().length;v.myJ=g.jv[tok];v.jTokens=Object.keys(g.jv)}
-  if(g.phase==='morning'){v.nightDead=g.result.nightDead&&pname(g.result.nightDead);v.nightTok=g.result.nightDead;v.news=g.result.news;v.head=g.result.head;v.deadJob=g.result.job&&'citizen';v.deadFlavor=null}
+  if(g.phase==='morning'){v.nightDead=g.result.nightDead&&pname(g.result.nightDead);v.nightTok=g.result.nightDead;v.news=g.result.news;v.head=g.result.head;v.deadJob=g.result.job&&'citizen';v.deadFlavor=null;v.sus=g.result.sus||null}
   if(g.phase==='end'){v.winner=g.winner;v.ending=g.ending||(g.winner==='M'?'m_fool':'c_win');v.pobak=g.pobak||'';v.stats=g.stats||null;v.roles=g.players.map(x=>({name:x.name,role:x.role,job:x.job,flavor:x.flavor,alive:x.alive,apply:!!x.apply,gender:x.gender,out:x.out||null}));}
   return v;
 }
@@ -707,7 +711,7 @@ function spreadHtml(){
   return `<div class="sp-hoe ${kind==='wrong'||kind==='night'?'hr':''}"><div class="sp-hbar"><b>고택 소식</b><i>호외요, 호외!</i></div>
     <div class="sp-head">${esc(head.t)}</div><div class="sp-pic">${pic}</div><div class="sp-quip">${esc(q)}</div></div>
   <div class="sp-panel"><div class="sp-title">${esc(title)}</div><div class="sp-in">${body}</div>
-    <div class="sp-status"><b>${esc(status)}</b><div>${esc(st2)}</div>${lw}</div>
+    <div class="sp-status"><b>${esc(status)}</b><div>${esc(st2)}</div>${lw}${modal==='morning'&&V.sus?`<div class="sp-sus">🕯️ 간밤 가장 의심받은 이: <b>${V.sus.names.map(esc).join(', ')}</b> (${V.sus.n}표)</div>`:''}</div>
     <div class="sp-btns">${isHost?'':'<button class="wood" id="mclose">닫기</button>'}${modal==='result'&&P?`<button class="wood" id="sp-tally">📊 지목 현황</button>`:''}${isHost?`<span class="hw"><button class="red" id="sp-next">${V.phase==='result'?'다음으로':'사랑방으로 모이기'}</button><small>집사에게만 보여요</small></span>`:''}</div></div>`}
 function verdictHtml(){if(!V.cfg.apply||V.winner!=='M')return'';const vs=V.roles.filter(p=>p.apply&&p.job==='mafia');const won=V.winner==='M';
   const others=V.roles.filter(p=>p.apply&&p.job!=='mafia');if(!vs.length&&!others.length)return'';
@@ -768,8 +772,9 @@ function centerHtml(){const ph=V.phase,me=V.me,al=me&&me.alive;
     if(job==='mafia'){if(chatOpen)return chatPanelHtml();return cnote(V.myNight?`✅ ${esc(pn(V.myNight))} 노림`:'🗡️ 오늘 밤 노릴 사람을 고르시오',V.mateNight.length?'동료: '+V.mateNight.map(esc).join(', '):(V.myNight?'동료를 기다리는 중':'좌우 명단에서 고르시오'),'rd')}
     if(job==='police')return V.myNight?cnote(`📜 ${esc(pn(V.myNight))}`,V.police?'자객입니다!':'자객이 아닙니다',V.police?'rd':'bl'):cnote('📜 뒤를 캘 사람을 고르시오','좌우 명단에서 한 명을 누르시오');
     if(job==='doctor')return V.myNight?cnote(`🌿 ${esc(pn(V.myNight))} 곁을 지킴`,'약을 달이며 아침을 기다리는 중'):cnote('🌿 돌볼 사람을 고르시오','자신도 고를 수 있어요');
-    return cnote('🌙 자시(子時)',me&&!al?'💀 관전 중 · 말하면 안 돼요':'눈을 감고 폰을 내려놓으시오')}
-  if(ph==='morning')return cnote(V.nightDead?`💀 ${esc(V.nightDead)}`:'🐓 무사한 아침',esc(V.news||''));
+    if(V.susPick)return V.myNight?cnote(`🕯️ ${esc(pn(V.myNight))} 의심함`,'아침에 익명으로 집계돼요 · 날이 밝을 때까지 폰을 보고 계시오','bl'):cnote('🕯️ 수상한 사람을 찍으시오','좌우 명단에서 한 명을 누르시오 · 아침에 익명으로 집계돼요');
+    return cnote('🌙 자시(子時)',me&&!al?'💀 관전 중 · 말하면 안 돼요':'날이 밝을 때까지 폰을 보고 계시오')}
+  if(ph==='morning')return cnote(V.nightDead?`💀 ${esc(V.nightDead)}`:'🐓 무사한 아침',esc(V.news||'')+(V.sus?`<br>🕯️ 간밤 가장 의심받은 이: <b>${V.sus.names.map(esc).join(', ')}</b> (${V.sus.n}표)`:''));
   if(ph==='end')return cnote(V.winner==='M'?'🗡️ 자객패 승리':'🏮 종갓집 승리','호패 공개를 눌러 결과를 보시오',V.winner==='M'?'rd':'bl');
   return ''}
 function bigResHtml(r){const [a,b,c]=r.dead?[`${esc(r.deadName)} 송치`,r.role==='M'?'⛓️ 자객 포박!':'😢 억울한 식구, 관아로 끌려감',r.role==='M'?'rd':'bl']:r.spared?[`${esc(r.sparedName)} 방면`,`⚖️ 찬성 ${r.jy} · 반대 ${r.jn}`,'bl']:r.revote?['🤝 동점!','동점자끼리 다시 지목합니다','']:['🤝 재지목도 동점','오늘은 송치 없음',''];
@@ -811,7 +816,8 @@ function bottomBox(){
     if(job==='mafia'){t=V.myNight?`✅ ${esc(pn(V.myNight))} 선택 완료${V.mateNight.length?' · 동료: '+V.mateNight.map(esc).join(', '):''}`:`🗡️ 오늘 밤 노릴 사람을 고르세요${V.mateNight.length?' (동료: '+V.mateNight.map(esc).join(', ')+')':''}`;b=(!V.myNight&&sel?btn('nsub',`🗡️ ${esc(sel)} 노리기`,'red'):'')+btn('m-chat','🤫 밀담')}
     else if(job==='police'){t=V.myNight?`📜 ${esc(pn(V.myNight))}: <b class="${V.police?'rd':'bl'}">${V.police?'자객입니다!':'자객이 아닙니다'}</b> (수첩에 적어뒀어요)`:'📜 마패를 꺼내 뒤를 캘 사람을 고르세요';b=!V.myNight&&sel?btn('nsub',`📜 ${esc(sel)} 조사`,'red'):''}
     else if(job==='doctor'){t=V.myNight?`🌿 오늘 밤 ${esc(pn(V.myNight))}님 곁에서 약을 달입니다`:'🌿 돌볼 사람을 고르세요 (자신도 가능)';b=!V.myNight&&sel?btn('nsub',`🌿 ${esc(sel)} 돌보기`,'red'):''}
-    else{t='🌙 자시(子時)입니다. 눈을 감고 폰을 내려놓으시오';if(me&&me.role==='M')b=btn('m-chat','🤫 밀담')}
+    else if(V.susPick){t=V.myNight?`🕯️ ${esc(pn(V.myNight))} 의심함 · 날이 밝을 때까지 기다리시오`:'🕯️ 오늘 밤 가장 수상한 사람을 찍으시오 (익명)';b=!V.myNight&&sel?btn('nsub',`🕯️ ${esc(sel)} 찍기`,'red'):''}
+    else{t='🌙 자시(子時)입니다. 날이 밝을 때까지 폰을 보고 계시오';if(me&&me.role==='M')b=btn('m-chat','🤫 밀담')}
     return `<div class="btxt">${t}</div><div class="brow">${b}${hb}</div>`}
   if(ph==='morning')return `<div class="btxt">🐓 ${esc(V.news||'')}</div><div class="brow">${btn('m-morning','📜 소식 보기')}${H(btn('next','사랑방으로 모이기','red'))}</div>`;
   if(ph==='end')return `<div class="btxt"><b class="${V.winner==='M'?'rd':'bl'}">${V.winner==='M'?'🗡️ 자객패 승리':'🏮 종갓집 승리'}</b></div><div class="brow">${btn('m-end','📜 호패 공개')}${H(btn('lobby','같은 식구로 한 판 더','red'))}${btn('quit','나가기')}</div>`;
@@ -829,7 +835,7 @@ function modalHtml(){const c=V&&V.cfg;
   case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-invite','📱 초대 (QR)'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${!V?btn('go-practice','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}${V?btn('quit','🚪 고택 나가기'):''}${isHost&&V&&(V.phase==='lobby'||V.players.some(p=>String(p.token).startsWith('bot-')))?btn('m-test','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}</div>
     <div class="muted" style="margin-top:12px">🧪 테스트 모드: 컴퓨터 식구 9명과 한 판을 돌려 화면을 미리 볼 수 있어요. 컴퓨터 식구는 지목과 밤 행동을 알아서 해요. 토론은 집사 버튼으로 바로 끝낼 수 있어요.<br>소리는 집사 폰에서 크게 틀어두는 걸 추천해요(배경음악은 집사 폰만 기본으로 켜져요).<br>폰을 가로로 돌리면 화면이 크게 보여요. 화면 회전이 잠겨 있으면 자동으로 눕혀서 보여드려요.</div>`;
   case 'rules':return `<h2>📜 놀이 방법</h2><div class="rules"><b>🎯 목표</b><br>🏮 종갓집: 숨어든 자객을 모두 관아로 송치하면 승리<br>🗡️ 자객패: 자객 수가 식구 수와 같아지면 승리<br><br>
-    <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람이 최후 변론을 하고, 모두 찬반 투표로 송치 여부를 정해요. 찬성이 더 많으면 관아로 송치되고 정체가 드러나요. 지목이 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 눈을 감고, 자객·암행어사·의원만 폰으로 몰래 움직여요.<br>6. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
+    <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람이 최후 변론을 하고, 모두 찬반 투표로 송치 여부를 정해요. 찬성이 더 많으면 관아로 송치되고 정체가 드러나요. 지목이 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 고개를 숙이고 폰으로 몰래 움직여요. 자객·암행어사·의원은 제 할 일을, 나머지 식구는 '수상한 사람 찍기'를 해요. 그래서 폰을 만지는 기척만으로는 자객을 알 수 없어요.<br>6. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
     <b>🗡️ 자객 지원</b><br>대기실에서 몰래 지원하면 자객에 뽑힐 확률이 소폭 올라가요. 지원해서 자객이 된 뒤 이기면 🎁 기념품, 지면 30분간 포박!<br><br><b>🤐 약속</b><br>탈락한 사람은 말하지 않기. 남의 폰 훔쳐보지 않기.</div>`;
   case 'dex':{const row=x=>`<div class="dexrow dexs">${SBART[x[0].split(' ').slice(1).join(' ')]?`<img class="sbmini big" src="${SBART[x[0].split(' ').slice(1).join(' ')]}" alt="">`:''}<b>${esc(x[0])}</b><div class="muted">${esc(x[1])}</div></div>`;
     return `<h2>📖 직업 도감</h2><h3>고정 직업</h3>${['mafia','police','doctor','soldier'].map(k=>{const J=JOBS[k],src=idSrc(k);return `<div class="dexrow dexs">${src?`<img class="sbmini big" style="object-position:center 12%" src="${src}" alt="">`:''}<b class="${J.team==='M'?'rd':'bl'}">${J.emo} ${J.name}</b> <span class="muted">${TEAM[J.team]}</span><div class="muted">${J.ability}</div></div>`}).join('')}
