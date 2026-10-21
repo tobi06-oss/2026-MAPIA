@@ -338,9 +338,13 @@ function hostStart(resume){
   if(!resume&&G.cfg.hostPlays)addPlayer(myToken,LS.get('mafia-name')||'방장',LS.get('mafia-intro')||'',LS.get('mafia-gender'));
   HT=hostTransport(G.code,hostMsg,(ok,err)=>{netOK=ok;netErr=err;if(ok)broadcast();else draw()});
   clearInterval(hostTick);hostTick=setInterval(hostTimer,500);
+  keepAwake();
   hostSave();broadcast();
 }
 function hostSave(){LS.set(HK,G)}
+// 집사 폰 화면이 꺼지면 고택 연결이 끊기므로 화면 켜짐 유지
+let wakeL=null;function keepAwake(){try{if(isHost&&navigator.wakeLock&&!document.hidden&&!wakeL)navigator.wakeLock.request('screen').then(l=>{wakeL=l;l.addEventListener('release',()=>wakeL=null)}).catch(()=>{})}catch(e){}}
+document.addEventListener('visibilitychange',keepAwake);document.addEventListener('pointerdown',keepAwake);
 function canHand(p){return p&&p.token!==myToken&&p.online&&!String(p.token).startsWith('bot-')}
 // 집사 양도: 지금 판 상태를 통째로 넘기고, 이 폰은 새로고침해서 일반 참가자로 다시 접속
 function handOver(tok){const cid=Object.keys(conn2tok).find(c=>conn2tok[c]===tok);if(!cid||!G)return alertBox('그 사람과 연결이 끊겨 있어요');
@@ -571,6 +575,7 @@ function hostCheck(){ // 방장 화면 전용 정보
 /* ===== 참가자(클라이언트) ===== */
 let CT=null, V=null, netOK=false, netErr=null, isHost=false, errMsg='', voteSel=null, peekRole=false, localEnd=0;
 function clientStart(code,name){
+  window.knockAt=Date.now();setTimeout(draw,8500);
   code=code.toUpperCase();LS.set('mafia-role',{host:false,code});LS.set('mafia-name',name);
   CT=clientTransport(code,m=>{if(m.t==='takeover'&&m.g){LS.set(HK,m.g);LS.set('mafia-role',{host:true,code:m.g.code});LS.set('mafia-handed',1);location.reload();return}if(m.t==='view'){V=m.v;errMsg='';localEnd=Date.now()+V.remain}if(m.t==='err'){errMsg=m.msg;if(!V){screen='home';modal='join';CT=null}}draw()},
     (ok,err)=>{netOK=ok;netErr=err;if(ok)CT.send({t:'join',token:myToken,name,intro:LS.get('mafia-intro')||'',gender:LS.get('mafia-gender')});draw()});
@@ -805,7 +810,9 @@ function slotsHtml(){const ps=V.players,n=ps.length,k=Math.ceil(n/2)||1;const h=
 function btn(id,label,cls){return `<button id="${id}" class="${cls||'wood'}">${label}</button>`}
 function bottomBox(){
   if(screen==='home'||!V){
-    if(screen==='game'&&!V)return `<div class="btxt">고택 대문을 두드리는 중…</div><div class="brow">${errMsg?`<span class="err">${esc(errMsg)}</span>`:''}${btn('home','처음으로')}</div>`;
+    if(screen==='game'&&!V){const rc=(LS.get('mafia-role')||{}).code||'',long=Date.now()-(window.knockAt||0)>8000;
+      const why=netErr==='peer-unavailable'||long?'아직 못 찾았어요 · 집사 폰의 고택 화면이 켜져 있어야 해요 (한 폰으로 집사·식구 동시엔 안 돼요)':netErr?'인터넷 연결을 확인해 주세요':'';
+      return `<div class="btxt">🚪 문패 ${esc(rc)} 대문을 두드리는 중…${why?`<br><small>${why}</small>`:''}</div><div class="brow">${errMsg?`<span class="err">${esc(errMsg)}</span>`:''}${btn('home','처음으로')}</div>`}
     return `<div class="brow big2">${btn('go-host','🏮 고택 열기','red')}${btn('go-join','🚪 고택 입장','blue')}</div>${errMsg?`<div class="err">${esc(errMsg)}</div>`:''}`}
   const ph=V.phase,me=V.me,H=x=>isHost?`<span class="hw"><span class="hb">${x}</span><small>집사에게만 보여요</small></span>`:'';
   const sel=voteSel?pn(voteSel):null;
