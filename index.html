@@ -896,7 +896,7 @@ function centerHtml(){const ph=V.phase,me=V.me,al=me&&me.alive;
   if(ph==='result')return V.result?bigResHtml(V.result):'';
   if(ph==='lobby'){const n=V.players.length,T=V.cfg.total||n;return cnote(`🏮 문패 ${esc(V.code)}`,`식구 ${n}/${T}명 입장 · ${n>=T?(isHost?'모두 모였소! 시작하시오':'모두 모였소! 곧 시작해요'):`${T-n}명 더 기다리는 중`}`)}
   if(ph==='roles')return cnote('🤫 호패 확인',me?'옆사람 몰래, 아래 버튼을 누르고 있는 동안만 보여요':'호패를 나눠주었습니다');
-  if(ph==='day')return cnote('☀️ 사랑방 공론',V.round===1?'돌아가며 이름과 한마디 소개부터!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>');
+  if(ph==='day')return cnote('☀️ 사랑방 공론',V.round===1?'돌아가며 이름과 신분(직업)을 소개하세요!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>');
   if(ph==='vote'){if(!al)return cnote('📜 멍석말이 지목',`${me?'💀 탈락자는 지켜보기만 · ':''}${V.voted}/${V.voters}명 지목`);
     if(V.myVote!==undefined)return cnote(`✅ ${esc(pn(V.myVote))} 지목`,`다른 식구를 기다리는 중 (${V.voted}/${V.voters})`);
     return cnote(V.revote?'🤝 동점자 재지목':'📜 멍석말이 지목',voteSel?`${esc(pn(voteSel))} 선택됨 · 아래 버튼으로 확정`:'좌우 명단에서 한 명을 고르시오','rd')}
@@ -948,7 +948,7 @@ function bottomBox(){
     return `<div class="btxt">${isHost?`식구 ${n}/${c.total||n}명 입장 · 문패 <b>${esc(V.code)}</b>${bad?` <span class="err">${n<3?'최소 3명':'자객 수 조정 필요'}</span>`:''}`:`문패 <b>${esc(V.code)}</b> · 집사가 시작하기를 기다리는 중`}</div>
     <div class="brow">${H(btn('m-invite','📱 초대'))}${H(btn('m-settings','📜 룰 선택'))}${applyOn(V.cfg)&&me?btn('m-apply',me.apply?'✅ 지원함':'🗡️ 자객 지원'):''}${H(`<button id="start" class="red" ${bad?'disabled':''}>호패 나눠주고 시작</button>`)}${isHost?'':btn('leave','나가기')}</div>`}
   if(ph==='roles')return `<div class="btxt">${me?'옆사람 몰래 호패를 확인하세요':'호패를 나눠주었습니다'}</div><div class="brow">${me?btn('m-card','📜 내 호패 보기'):''}${H(btn('day','첫날 시작','red'))}</div>`;
-  if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 한마디 소개부터!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}${V.sus&&V.sus.notes&&V.sus.notes.length?btn('m-notes','🕯️ 지난밤 쪽지'):''}</div>`;
+  if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 신분(직업)을 소개하세요!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}${V.sus&&V.sus.notes&&V.sus.notes.length?btn('m-notes','🕯️ 지난밤 쪽지'):''}</div>`;
   if(ph==='vote'){const hb=H(btn('endvote','강제 개표'));
     if(!me||!me.alive)return `<div class="btxt">${me?'💀 탈락자는 지목할 수 없소':''} 지목 진행 중 (${V.voted}/${V.voters})</div><div class="brow">${hb}</div>`;
     if(V.myVote!==undefined)return `<div class="btxt">✅ ${esc(pn(V.myVote))}님을 지목했소 (되돌릴 수 없음)</div><div class="brow">${btn('m-tally','📊 지목 현황')}${hb}</div>`;
