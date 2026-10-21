@@ -165,7 +165,23 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .sp-status b{color:#2b2118!important;font-size:18px!important}.sp-lw{color:#5a3a1c!important}.sp-lw b{color:#1d140c!important}
 /* 결말 장식 액자 */
 .modal.endf{left:24px;top:8px;width:976px;height:543px;background:#ecdec3;border:none;border-radius:2px;box-shadow:0 10px 30px rgba(0,0,0,.7),inset 0 0 0 10px #ecdec3,inset 0 0 0 12px #8b6a43,inset 0 0 0 16px #ecdec3,inset 0 0 0 17px #8b6a43}
-.modal.endf .mbody{position:relative;z-index:2;padding:22px 150px 18px}
+.modal.endf .mbody{position:relative;z-index:2;padding:22px 46px 18px}
+.endf .end2{display:flex;gap:22px;align-items:flex-start;justify-content:center;margin-top:4px}
+.endf .end-l{flex:0 0 470px;position:relative}.endf .end-r{flex:1;min-width:0;max-width:400px}
+.esum{background:rgba(248,241,224,.92);border:1.5px solid #8b6a43;border-radius:4px;padding:10px 12px 8px;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.es-h{font-family:"Song Myung",serif;font-size:21px;color:#3b2a1a;text-align:center}.es-meta{text-align:center;font-size:13px;color:#7a6851;margin:2px 0 6px}
+.es-sec{font-size:13px;color:#8b5a2b;border-bottom:1px dashed #b89a6a;margin:8px 0 4px;padding-bottom:2px}
+.es-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #e3d3b0}
+.es-tag{flex:0 0 22px;text-align:center;font-weight:800;color:#8b5a2b;font-size:15px}
+.es-face{flex:0 0 36px;width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1.5px solid #5a3a1c;display:flex;align-items:center;justify-content:center;font-size:20px;background:#efe2c4}
+.es-row.gone .es-face{filter:grayscale(.85)}
+.es-txt{font-size:14.5px;line-height:1.3;min-width:0}.es-how{font-size:12.5px;color:#7a6851}
+.endf .end2 .pobak{position:static;width:auto;margin:10px 0 0;transform:rotate(1.2deg)}
+.endf .end-r .sec-box{margin:0 0 10px;padding:6px 10px}.endf .end-r .sec-box h3{margin:2px 0;font-size:17px}.endf .end-r .sec-box div[style]{font-size:15px!important}
+.endf .end-r .pobak{margin:0 0 12px}
+.arrest{margin:12px 0 4px;padding:10px 12px;border:3px double #8f1d16;background:#f9e3d6;text-align:center;box-shadow:0 3px 10px rgba(143,29,22,.25)}.ar-n{font-size:14.5px;color:#7a2a1a}.ar-c{font-family:'Song Myung',serif;font-size:24px;color:#a8180f;margin-top:4px;letter-spacing:1px}.endf .end-r .cuffimg{height:30px;margin:0 auto 2px}
+.endf .end-r .verdict,.endf .end-r>div:first-child:not(.esum){margin-top:0}
+
 .endf .dk{position:absolute;z-index:1;pointer-events:none;opacity:.95}.endf .fl{left:20px;top:20px;width:150px}.endf .fr{right:20px;top:20px;width:150px;transform:scaleX(-1)}
 .endf .jars{left:20px;bottom:20px;width:150px;mix-blend-mode:multiply}.endf .books{right:20px;bottom:20px;width:150px;mix-blend-mode:multiply}
 .endf .big{font-size:38px!important;color:#1d140c!important}.endf .dk,.ecard .tas{-webkit-mask-image:radial-gradient(ellipse at center,#000 55%,transparent 75%);mask-image:radial-gradient(ellipse at center,#000 55%,transparent 75%)}.endf .fl,.endf .fr{-webkit-mask-image:radial-gradient(ellipse at 0 0,#000 45%,transparent 72%);mask-image:radial-gradient(ellipse at 0 0,#000 45%,transparent 72%)}.endf .jars{-webkit-mask-image:radial-gradient(ellipse at 0 100%,#000 50%,transparent 75%);mask-image:radial-gradient(ellipse at 0 100%,#000 50%,transparent 75%)}.endf .books{-webkit-mask-image:radial-gradient(ellipse at 100% 100%,#000 50%,transparent 75%);mask-image:radial-gradient(ellipse at 100% 100%,#000 50%,transparent 75%)}
@@ -361,7 +377,7 @@ function hostCmd(c){ // 방장 화면 버튼
     g.players.forEach((p,i)=>{p.job=jobs[i];p.role=JOBS[p.job].team;p.alive=true;p.armor=p.job==='soldier'?1:0;p.flavor=null});
     g.players.filter(p=>p.job==='mafia').forEach(p=>p.flavor=draw1(p.gender,true));
     g.players.filter(p=>p.job==='citizen').forEach(p=>p.flavor=draw1(p.gender,false));
-    g.round=0;g.log=[];g.chat=[];g.winner=null;g.ending=null;g.stats={wrong:0,caught:0,mafia0:g.players.filter(x=>x.role==='M').length};g.phase='roles';}
+    g.round=0;g.outN=0;g.players.forEach(x=>{delete x.out});g.log=[];g.chat=[];g.winner=null;g.ending=null;g.stats={wrong:0,caught:0,mafia0:g.players.filter(x=>x.role==='M').length};g.phase='roles';}
   if(c.k==='day')startDay();
   if(c.k==='vote')startVote(false);
   if(c.k==='plus'&&g.phase==='day')g.endAt+=60000;
@@ -429,7 +445,8 @@ function testScene(k){const g=G;if(!g.players.some(p=>p.job)){g.players.forEach(
   if(/^[mc]_/.test(k)){g.winner=k[0]==='m'?'M':'C';g.ending=k;g.phase='end';g.pobak=k[0]==='m'?'':(k==='c_fast'?'짐도 못 푼':['어설픈','허술한','연기력이 형편없는'][Math.floor(Math.random()*3)]);g.stats.wrong=k==='m_wrong'?3:0;
     const M=g.players.filter(p=>p.role==='M'),C=g.players.filter(p=>p.role!=='M'&&p.token!==myToken).concat(g.players.filter(p=>p.role!=='M'&&p.token===myToken));
     if(g.winner==='C'){M.forEach(p=>p.alive=false);if(k==='c_pyrrhic')C.slice(0,Math.max(0,C.length-3)).forEach(p=>p.alive=false);if(k==='c_amhaeng'||k==='c_pyrrhic'){const po=C.find(p=>p.job==='police');if(po){po.alive=true;if(k==='c_pyrrhic'){const x=C.find(p=>p.alive&&p!==po&&p.token!==myToken);if(x)x.alive=false}}}else C.filter(p=>p.job==='police').forEach(p=>p.alive=false)}
-    else{if(k==='m_last')M.slice(1).forEach(p=>p.alive=false);const mA=M.filter(p=>p.alive).length;C.slice(0,Math.max(0,C.length-mA)).forEach(p=>p.alive=false)}}
+    else{if(k==='m_last')M.slice(1).forEach(p=>p.alive=false);const mA=M.filter(p=>p.alive).length;C.slice(0,Math.max(0,C.length-mA)).forEach(p=>p.alive=false)}
+    let on=0;g.players.forEach(p=>{if(p.alive)delete p.out;else{on++;p.out={n:on,r:Math.ceil(on/2),how:on%2?'vote':'night'}}});g.round=Math.max(1,Math.ceil(on/2))}
   else if(['caught','wrong','wrongPolice','tie'].includes(k)){const v=k==='caught'?mf:k==='wrongPolice'?po:ct;const r={votes,cands:g.players.map(p=>p.token),dead:null,role:null,revote:false,noone:false};
     if(k==='tie'){r.noone=true;r.head=hoe('tie')}else{v.alive=false;Object.assign(r,{dead:v.token,role:v.role,job:v.job,flavor:v.flavor,head:k==='caught'?hoeVote(v):k==='wrongPolice'?hoe('wrongPolice',v):hoe('wrong',v)});g.endAt=Date.now()+g.cfg.lastWords*1000}
     g.result=r;g.phase='result'}
@@ -451,7 +468,7 @@ function countVotes(){
   const cnt={};G.cands.forEach(t=>cnt[t]=0);Object.values(G.votes).forEach(t=>cnt[t]=(cnt[t]||0)+1);
   const mx=Math.max(...Object.values(cnt));const ties=G.cands.filter(t=>cnt[t]===mx);
   const r={votes:{...G.votes},cands:[...G.cands],dead:null,role:null,revote:false,noone:false};
-  if(ties.length===1&&mx>0){const p=G.players.find(p=>p.token===ties[0]);p.alive=false;r.dead=p.token;r.role=p.role;r.job=p.job;r.flavor=p.flavor;r.head=hoeVote(p);if(G.stats){if(p.role==='M')G.stats.caught++;else G.stats.wrong++}
+  if(ties.length===1&&mx>0){const p=G.players.find(p=>p.token===ties[0]);p.alive=false;p.out={n:G.outN=(G.outN||0)+1,r:G.round,how:'vote'};r.dead=p.token;r.role=p.role;r.job=p.job;r.flavor=p.flavor;r.head=hoeVote(p);if(G.stats){if(p.role==='M')G.stats.caught++;else G.stats.wrong++}
     G.log.push(`${G.round}일째 공론: ${p.name} 송치 → ${p.role==='M'?'자객 포박':'억울한 식구 추방'}`);G.endAt=Date.now()+G.cfg.lastWords*1000}
   else if(!G.revote){r.revote=true;G.cands=ties.length?ties:G.cands}
   else{r.noone=true;r.head=hoe('tie');G.log.push(`${G.round}일째 공론: 재지목도 동점, 송치 없음`)}
@@ -467,7 +484,7 @@ function resolveNight(){
   if(!p){news=pick(NEWS_NONE);head=hoe('none')}
   else if(N.doctor===k){news=pick(NEWS_SAVED);head=hoe('saved');G.log.push(`${G.round}일째 자시: 의원이 습격을 막음`)}
   else if(p.armor>0){p.armor--;news=pick(NEWS_SOLDIER).replace('{n}',p.name);head=hoe('soldier',p);G.log.push(`${G.round}일째 자시: ${p.name} 습격을 막아냄`)}
-  else{p.alive=false;dead=k;head=hoeNight(p);news=pick(NEWS_DEAD).replace('{n}',p.name);G.log.push(`${G.round}일째 자시: ${p.name} 당함`)}
+  else{p.alive=false;p.out={n:G.outN=(G.outN||0)+1,r:G.round,how:'night'};dead=k;head=hoeNight(p);news=pick(NEWS_DEAD).replace('{n}',p.name);G.log.push(`${G.round}일째 자시: ${p.name} 당함`)}
   G.result={nightDead:dead,news,head,job:dead&&p.job,flavor:dead&&p.flavor};G.phase='morning';
 }
 function endGame(w){G.winner=w;G.phase='end';const st=G.stats||{wrong:0,mafia0:0},al=aliveP(),mL=al.filter(p=>p.role==='M').length;
@@ -491,7 +508,7 @@ function viewFor(tok){
   if(p&&p.role==='M')v.chat=g.chat.slice(-40);
   if(g.phase==='result'&&g.result.dead)v.lastWords=g.cfg.lastWords;
   if(g.phase==='morning'){v.nightDead=g.result.nightDead&&pname(g.result.nightDead);v.nightTok=g.result.nightDead;v.news=g.result.news;v.head=g.result.head;v.deadJob=g.result.job;v.deadFlavor=g.result.flavor}
-  if(g.phase==='end'){v.winner=g.winner;v.ending=g.ending||(g.winner==='M'?'m_fool':'c_win');v.pobak=g.pobak||'';v.stats=g.stats||null;v.roles=g.players.map(x=>({name:x.name,role:x.role,job:x.job,flavor:x.flavor,alive:x.alive,apply:!!x.apply,gender:x.gender}))}
+  if(g.phase==='end'){v.winner=g.winner;v.ending=g.ending||(g.winner==='M'?'m_fool':'c_win');v.pobak=g.pobak||'';v.stats=g.stats||null;v.roles=g.players.map(x=>({name:x.name,role:x.role,job:x.job,flavor:x.flavor,alive:x.alive,apply:!!x.apply,gender:x.gender,out:x.out||null}))}
   return v;
 }
 function tally(votes,cands){const c={};cands.forEach(t=>c[t]=0);Object.values(votes).forEach(t=>c[t]=(c[t]||0)+1);return Object.entries(c).map(([t,n])=>({name:pname(t),n})).sort((a,b)=>b.n-a.n)}
@@ -584,11 +601,19 @@ ART.m_perfect=G2.e_perfect;
 const END_FB={m_fool:'m_wrong',m_perfect:'m_last'};
 function endArt(k){return ART[k]||ART[END_FB[k]]||null}
 function endInfo(){const E0=ENDINGS[V.ending]||ENDINGS[V.winner==='M'?'m_fool':'c_win'],w=V.stats?V.stats.wrong:0,E={...E0,t:E0.t.replace('{w}',w)};const ms=V.roles.filter(p=>p.role==='M').map(p=>p.name);return {...E,key:V.ending,ms,alive:V.roles.filter(p=>p.alive).length}}
+function endSummaryHtml(){const R=V.roles,outs=R.filter(p=>!p.alive).sort((a,b)=>((a.out&&a.out.n)||99)-((b.out&&b.out.n)||99)),alive=R.filter(p=>p.alive);
+  const nM=R.filter(p=>p.role==='M').length,days=Math.max(1,V.round||1);
+  const row=(p,tag)=>{const J=JOBS[p.job]||JOBS.citizen,f=p.flavor,src=idSrc(p.job,f,p.gender);const jn=p.job==='citizen'&&f?esc(f.n):J.emo+' '+J.name;
+    return `<div class="es-row ${p.alive?'':'gone'}"><span class="es-tag">${tag}</span>${src?`<img class="es-face" src="${src}" alt="">`:`<span class="es-face es-emo">${J.emo}</span>`}<div class="es-txt"><b>${esc(p.name)}</b> <span class="${p.role==='M'?'rd':'bl'}">${jn}</span>${p.job==='mafia'&&f?`<span class="muted"> · ${esc(f.n)} 행세</span>`:''}${p.apply&&V.cfg.apply?'<span class="muted"> · 지원</span>':''}<div class="es-how">${p.alive?'끝까지 살아남음':p.out?`${p.out.r}일째 ${p.out.how==='vote'?'오시 · 관아로 송치':'자시 · 자객에게 당함'}`:'탈락'}</div></div></div>`};
+  return `<div class="esum"><div class="es-h">📜 고택 일지</div><div class="es-meta">${days}일 동안 · 자객 ${nM}명 · 식구 ${R.length-nM}명</div>
+  ${outs.length?`<div class="es-sec">탈락 순서</div>${outs.map((p,i)=>row(p,i+1)).join('')}`:''}${alive.length?`<div class="es-sec">살아남은 이</div>${alive.map(p=>row(p,'★')).join('')}`:''}</div>`}
+function arrestHtml(){if(!V.cfg.apply||V.winner==='M')return'';const ms=V.roles.filter(p=>p.apply&&p.job==='mafia').map(p=>esc(p.name));if(!ms.length)return'';
+  return `<div class="arrest"><div class="ar-n">📢 자객 지원자 ${ms.join(', ')}, 패배!</div><div class="ar-c">대역죄인 ${ms.join(', ')}${ms.length>1?'을(를)':(/[가-힣]$/.test(ms[0])&&(ms[0].charCodeAt(ms[0].length-1)-0xAC00)%28?'을':'를')} 즉시 포박하라!</div></div>`}
 function photoCardHtml(){const E=endInfo(),m=V.winner==='M';
   return `<div class="ecard ${m?'em':'ec'}"><img class="tas l" src="${G2.d_tasL}"><img class="tas r" src="${G2.d_tasR}"><i class="cn c1"></i><i class="cn c2"></i><i class="cn c3"></i><i class="cn c4"></i><div class="eimg ${endArt(E.key)?'has':''}">${endArt(E.key)?`<img src="${endArt(E.key)}" alt="">`:''}<div class="efb" style="background-image:url('${stageBg()}')"></div></div>
   <div class="ecap">${esc(E.t)}</div><div class="esub">${esc(E.s)}</div>
   <div class="efoot"><span>🗡️ 자객: ${E.ms.map(esc).join(', ')}</span><span>${PC_DATE}</span></div><div class="eseal" ${E.key==='m_perfect'?'style="display:none"':''}>${m?'賊':'勝'}</div></div>
-  ${pobakHtml(E)}<div class="center"><button class="wood" id="savecard">📸 사진으로 저장</button></div>`}
+  <div class="center"><button class="wood" id="savecard">📸 사진으로 저장</button></div>`}
 function pobakHtml(E){const ms=V.cfg.apply?V.roles.filter(p=>p.apply&&p.job==='mafia').map(p=>p.name):[];if(V.winner==='M'||!ms.length)return'';const k='pb_'+V.code+'_'+ms.join();let t0=Date.now();try{const v=+localStorage.getItem(k);if(v)t0=v;else localStorage.setItem(k,t0)}catch(e){}window._pbT0=t0;
   return `<div class="pobak"><div class="pb-h">포 박 령</div><div class="pb-m"><b>${esc(V.pobak||'어설픈')}</b> 자객들. 임무에 실패한 대가로 <b>30분간 포박</b>한다.</div><img class="cuffimg" src="img/cuffs.png" alt="수갑"><div class="pb-n">${ms.map(n=>`<span>${esc(n)}</span>`).join('')}</div><div class="pb-t" id="pbtm">30:00</div></div>`}
 setInterval(()=>{const el=document.getElementById('pbtm');if(!el||!window._pbT0)return;const s=Math.max(0,1800-Math.floor((Date.now()-window._pbT0)/1000));el.textContent=s?`남은 포박 ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:'포박을 풀어주시오!';el.classList.toggle('done',!s)},1000);
@@ -765,8 +790,8 @@ function modalHtml(){const c=V&&V.cfg;
     return `<h2 class="center">${V.round}일째 공론 결과</h2>${hoeHtml(r.revote?'':r.head,r.dead&&r.role!=='M')}<div class="center">${r.dead?`<div style="font-size:22px">${esc(r.deadName)}님 관아로 송치</div><div class="big ${r.role==='M'?'rd':'bl'}">${r.role==='M'?'⛓️ 자객 포박!':'😢 억울한 식구, 관아로 끌려감'}</div>${revealHtml(r.job,r.flavor)}`:`<div class="big">🤝 동점</div><div class="muted">${r.revote?'동점자끼리 재지목합니다':'재지목도 동점이라 아무도 송치되지 않았습니다'}</div>`}
     ${V.lastWords?`<div class="muted" style="margin-top:8px">🕯️ ${esc(r.deadName)}님의 마지막 한마디</div><div class="big tm"></div>`:''}</div>${tallyHtml(r.tally,true)}`}
   case 'morning':return `<h2 class="center">🐓 닭이 울었습니다</h2>${hoeHtml(V.head,!!V.nightDead)}<div class="center">${V.nightDead?`<div class="big">💀 ${esc(V.nightDead)}</div>`:'<div class="big">☀️</div>'}<div style="font-size:19px;line-height:1.6">${esc(V.news||'')}</div>${V.nightDead?revealHtml(V.deadJob,V.deadFlavor):''}</div>`;
-  case 'end':return `<div class="center"><div class="big ${V.winner==='M'?'rd':'bl'}">${V.winner==='M'?'🗡️ 자객패 승리':'🏮 종갓집 승리'}</div><div class="muted">${V.winner==='M'?'고택이 도적떼의 손에 넘어갔습니다!':'고택의 평화가 돌아왔습니다!'}</div></div>${photoCardHtml()}
-    ${verdictHtml()}<h3>📜 호패 공개</h3>${V.roles.map(p=>{const J=JOBS[p.job]||JOBS.citizen,f=p.flavor;return `<div class="dexrow dexs">${idSrc(p.job,f,p.gender)?`<img class="sbmini big ${p.alive?'':'dead'}" src="${idSrc(p.job,f,p.gender)}" alt="">`:''}${p.alive?'':'💀 '}<b>${esc(p.name)}</b> — <b class="${p.role==='M'?'rd':'bl'}">${p.job==='citizen'&&f?esc(f.n):J.emo+' '+J.name}</b>${p.job==='mafia'&&f?` <span class="muted">(${esc(f.n)} 행세)</span>`:''}${p.job==='citizen'&&f?`<div class="muted">${esc(f.d)}</div>`:''}</div>`}).join('')}`;
+  case 'end':return `<div class="center"><div class="big ${V.winner==='M'?'rd':'bl'}">${V.winner==='M'?'🗡️ 자객패 승리':'🏮 종갓집 승리'}</div><div class="muted">${V.winner==='M'?'고택이 도적떼의 손에 넘어갔습니다!':'고택의 평화가 돌아왔습니다!'}</div></div>
+    <div class="end2"><div class="end-l">${photoCardHtml()}</div><div class="end-r">${pobakHtml(endInfo())}${verdictHtml()}${endSummaryHtml()}${arrestHtml()}</div></div>`;
   }
   return ''}
 
