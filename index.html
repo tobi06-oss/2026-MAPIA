@@ -254,6 +254,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .gmsg{margin:3px 0;line-height:1.5}.gwho{display:inline-flex;align-items:center;gap:4px;cursor:pointer;vertical-align:middle}.gwho .gface{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid #8b6a43;background:#f1dfb8}.gwho b{text-decoration:underline dotted #b89a6a;text-underline-offset:3px}.gcol{margin:0 2px 0 1px;color:#8b6a43}
 .ttl{font-size:.78em;opacity:.8;font-weight:400}
 .cn-sub{font-size:15px;font-weight:400;color:#e8d8b4;opacity:.9;margin-top:4px}
+.es-tip2{margin-left:8px;padding:1px 8px;border-radius:9px;background:#f3e4c2;color:#8b5a2b;font-size:11.5px;vertical-align:middle}
 </style>
 
 </head>
@@ -769,8 +770,8 @@ function endSummaryHtml(){const R=V.roles,outs=R.filter(p=>!p.alive).sort((a,b)=
     const how=p.alive?'a':p.out?(p.out.how==='vote'?'v':p.out.how==='left'?'l':'n'):'n';
     const ht=p.alive?'살아남음':p.out?`${p.out.r}일째 ${p.out.how==='left'?'자리 비움':p.out.how==='vote'?'관아 송치':'밤에 피습'}`:'탈락';
     return `<div class="es-row ${p.alive?'':'gone'}" data-pinfo="${p.token}"><span class="es-no ${how}">${tag}</span>${src?`<img class="es-face" src="${src}" alt="">`:`<span class="es-face es-emo">${J.emo}</span>`}<div class="es-txt"><div class="es-l1"><b>${esc(p.name)}</b><span class="es-job ${p.role==='M'?'jm':p.job==='citizen'?'jc':'js'}">${jn}</span></div><div class="es-how">${ht}${p.job==='mafia'&&f?` · ${esc(f.n.replace(/^\S+\s/,''))} 행세`:''}${p.apply&&applyOn(V.cfg)?' · 지원':''}</div></div></div>`};
-  return `<div class="esum"><div class="es-hd"><div class="es-h">📜 고택 일지</div><div class="es-meta">${days}일 · 자객 ${nM} · 식구 ${R.length-nM}</div></div>
-  ${outs.length?`<div class="es-sec">탈락 순서</div><div class="es-grid" style="grid-auto-flow:column;grid-template-rows:repeat(${Math.ceil(outs.length/2)},auto)">${outs.map((p,i)=>row(p,i+1)).join('')}</div>`:''}${alive.length?`<div class="es-sec">살아남은 이</div><div class="es-grid">${alive.map(p=>row(p,'★')).join('')}</div>`:''}<div class="es-tip">👆 아이디를 누르면 정보가 나와요</div></div>`}
+  return `<div class="esum"><div class="es-hd"><div class="es-h">📜 고택 일지<span class="es-tip2">👆 아이디를 누르면 정보가 나와요</span></div><div class="es-meta">${days}일 · 자객 ${nM} · 식구 ${R.length-nM}</div></div>
+  ${outs.length?`<div class="es-sec">탈락 순서</div><div class="es-grid" style="grid-auto-flow:column;grid-template-rows:repeat(${Math.ceil(outs.length/2)},auto)">${outs.map((p,i)=>row(p,i+1)).join('')}</div>`:''}${alive.length?`<div class="es-sec">살아남은 이</div><div class="es-grid">${alive.map(p=>row(p,'★')).join('')}</div>`:''}</div>`}
 function arrestHtml(){if(!applyOn(V.cfg)||V.winner==='M')return'';const ms=V.roles.filter(p=>p.apply&&p.job==='mafia').map(p=>esc(p.name));if(!ms.length)return'';
   return `<div class="arrest"><div class="ar-n">📢 자객 지원자 ${ms.join(', ')}, 패배!</div><div class="ar-c">대역죄인 ${ms.join(', ')}${ms.length>1?'을(를)':(/[가-힣]$/.test(ms[0])&&(ms[0].charCodeAt(ms[0].length-1)-0xAC00)%28?'을':'를')} 즉시 포박하라!</div></div>`}
 function photoCardHtml(){const E=endInfo(),m=V.winner==='M';
