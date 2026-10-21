@@ -18,7 +18,7 @@ input{-webkit-user-select:text;user-select:text}
 #mroot>*{pointer-events:auto}
 #mroot .dim{position:absolute;inset:0}
 #mroot.upright{position:fixed;left:0;top:0;width:100%;height:100%;transform:none}
-#mroot.upright .modal{left:10px;right:10px;top:10px;width:auto;height:auto;max-height:calc(100% - 20px)}
+#mroot.upright .modal{left:22px;right:22px;top:20px;width:auto;height:auto;max-height:calc(100% - 40px)}
 #mroot.upright .mbody{font-size:17px}
 #mroot.upright .mbody::before{content:"📱 키보드가 세로로 떴나요? 화면 방향 잠금(자물쇠)을 풀고 폰을 가로로 돌리면 게임과 키보드가 모두 가로로 나와요.";display:block;margin:0 50px 12px 0;padding:9px 12px;border:1.5px dashed #b0703a;border-radius:8px;background:#fff3dc;color:#7a3e16;font-size:14.5px;line-height:1.45}
 h2,h3,.big,.code,button,.pname,.hud,.hud2,.jname,.sname,.jemo+.jname,.btxt,.logbox b,.sign{font-family:"궁서","궁서체","Gungsuh","GungSeo","Song Myung","Gowun Batang",serif;font-weight:400!important;-webkit-text-stroke:.7px currentColor;paint-order:stroke fill}
@@ -65,7 +65,28 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .dim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:5!important}
 .modal{position:absolute;left:202px;top:30px;width:620px;height:500px;z-index:6!important;display:flex;flex-direction:column}
 .paper{background:linear-gradient(#f5e7c6,#ead6a8);color:#2b2118;border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.6);border-top:14px solid #6b4524;border-bottom:14px solid #6b4524}
-.mbody{flex:1;overflow:auto;padding:16px 24px 20px;font-size:16px}
+.mbody{flex:1;min-height:0;overflow:auto;padding:16px 24px 20px;font-size:16px}
+/* 두루마리 창: 위아래 나무 축 + 한지 */
+.modal.paper:not(.endf){height:auto;max-height:500px;border:none;border-radius:0;padding:22px 0 22px;overflow:visible;
+ background:
+  linear-gradient(90deg,rgba(120,80,30,.22),rgba(120,80,30,0) 18px,rgba(120,80,30,0) calc(100% - 18px),rgba(120,80,30,.22)),
+  repeating-linear-gradient(0deg,rgba(150,110,60,.05) 0 2px,transparent 2px 5px),
+  radial-gradient(ellipse at 30% 20%,#fbf0d6,#efdcb0 70%,#e6cf9c);
+ box-shadow:0 12px 30px rgba(0,0,0,.6),inset 0 10px 14px -10px rgba(80,50,20,.45),inset 0 -10px 14px -10px rgba(80,50,20,.45)}
+.modal.paper:not(.endf)::before,.modal.paper:not(.endf)::after{content:"";position:absolute;left:-16px;right:-16px;height:20px;border-radius:10px;z-index:3;pointer-events:none;
+ background:
+  radial-gradient(circle at 10px 50%,#d9a75c 0 4px,#7a4a1e 5px 9px,transparent 10px),
+  radial-gradient(circle at calc(100% - 10px) 50%,#d9a75c 0 4px,#7a4a1e 5px 9px,transparent 10px),
+  linear-gradient(#a8743d,#7a4d22 45%,#5a3416 55%,#7a4d22 80%,#4a2a10) 20px 0/calc(100% - 40px) 100% no-repeat;
+ box-shadow:0 3px 6px rgba(0,0,0,.45)}
+.modal.paper:not(.endf)::before{top:-8px}.modal.paper:not(.endf)::after{bottom:-8px}
+.modal.paper:not(.endf) .mclose{top:20px;right:14px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a8743d,#6b4524 70%);border:2px solid #4a2a10;font-size:16px}
+.modal.paper:not(.endf) .mbody{padding:10px 26px 12px}
+.mbody{scrollbar-width:thin;scrollbar-color:#8a5d33 rgba(120,80,30,.12)}
+.mbody::-webkit-scrollbar{width:8px}
+.mbody::-webkit-scrollbar-track{background:rgba(120,80,30,.12);border-radius:4px;margin:6px 0}
+.mbody::-webkit-scrollbar-thumb{background:linear-gradient(90deg,#a8743d,#6b4524);border-radius:4px;border:1px solid #4a2a10}
+.mbody::-webkit-scrollbar-button{display:none;height:0}
 .mclose{position:absolute;right:6px;top:4px;background:#6b4524;width:38px;height:38px;padding:0;font-size:18px;z-index:2}
 .paper h2{margin:2px 0 10px;font-size:23px}.paper h3{margin:14px 0 6px;font-size:18px}
 .paper label{display:block;font-size:14px;color:#6b5a44;margin:10px 0 4px}.paper label.chk{color:#2b2118;font-size:15px}
@@ -269,7 +290,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 /* ===== 방장(사회자) 로직 ===== */
 let G=null, HT=null, hostTick=null;
 const HK='mafia-host-state';
-function defaultCfg(){return{mafia:2,gap:4,minutes:5,night:true,hostPlays:true,police:true,doctor:true,soldier:false,lastWords:30,flavor:true,apply:true,applyW:1.2,gonjang:3}}
+function defaultCfg(){return{mafia:2,gap:4,minutes:10,night:true,hostPlays:true,police:true,doctor:true,soldier:false,lastWords:60,flavor:true,apply:true,applyW:1.2,gonjang:3}}
 function hostStart(resume){
   if(resume)resume.cfg=Object.assign(defaultCfg(),resume.cfg);
   G=resume||{code:rid(4),cfg:defaultCfg(),chat:[],players:[],phase:'lobby',round:0,log:[],votes:{},nightVotes:{},cands:[],revote:false,result:null,winner:null,endAt:0};
