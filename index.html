@@ -62,7 +62,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .btxt{font-size:16px;line-height:1.3;max-height:44px;overflow:hidden;text-shadow:0 1px 2px #000}
 .brow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:nowrap}
 .brow button{padding:7px 14px;font-size:16px;white-space:nowrap}
-.brow.big2 button{font-size:24px;padding:12px 34px}
+.brow.big2 button{font-size:24px;padding:12px 34px}.brow.big2 button small{display:block;font-size:14px;font-weight:600;opacity:.85;margin-top:2px;letter-spacing:0}
 .muted2{font-size:14px;opacity:.8}
 .err{color:#ff8a7a;font-size:14px}
 .corner{position:absolute;top:510px;width:150px;height:38px;font-size:16px;padding:0}
@@ -902,7 +902,7 @@ function bottomBox(){
     if(screen==='game'&&!V){const rc=(LS.get('mafia-role')||{}).code||'',long=Date.now()-(window.knockAt||0)>8000;
       const why=NET.stage==='relay'?'직접 연결이 막혀서 인터넷 중계로 들어가는 중… (LTE도 돼요)':NET.stage==='ice'||NET.fails&&NET.stage==='dial'?`고택은 찾았는데 기기끼리 직접 연결이 막혀요 (${NET.fails}번째 재시도) · 같은 와이파이에 붙여 보세요`:NET.stage==='nohost'||long&&NET.stage!=='dial'?'고택이 안 보여요 · 집사 화면이 켜져 있고 문패가 맞는지 확인하세요 (한 폰으로 집사·식구 동시엔 안 돼요)':NET.stage==='srv'&&long?'연결 서버에 못 붙고 있어요 · 인터넷 연결을 확인해 주세요':NET.stage==='dial'?'고택 문을 여는 중…':'';
       return `<div class="btxt">🚪 문패 ${esc(rc)} 대문을 두드리는 중…${why?`<br><small>${why}</small>`:''}</div><div class="brow">${errMsg?`<span class="err">${esc(errMsg)}</span>`:''}${btn('home','처음으로')}</div>`}
-    return `<div class="brow big2">${btn('go-host','🏮 고택 열기','red')}${btn('go-join','🚪 고택 입장','blue')}</div>${errMsg?`<div class="err">${esc(errMsg)}</div>`:''}`}
+    return `<div class="brow big2">${btn('go-host','🏮 고택 열기<small>집사(방장)만</small>','red')}${btn('go-join',`🚪 고택 입장<small>${LS.get('pending-room')?'문패 '+esc(LS.get('pending-room'))+' 손님은 여기':'초대받은 손님은 여기'}</small>`,'blue')}</div>${errMsg?`<div class="err">${esc(errMsg)}</div>`:''}`}
   const ph=V.phase,me=V.me,H=x=>isHost?`<span class="hw"><span class="hb">${x}</span><small>집사에게만 보여요</small></span>`:'';
   const sel=voteSel?pn(voteSel):null;
   if(ph==='lobby'){const n=V.players.length,c=V.cfg;const bad=n-2*c.mafia<c.gap||n<3||c.mafia<1||pickBad(c);
@@ -1000,7 +1000,7 @@ function bind(){
   on('#go-practice','click',()=>{errMsg='';if(needProfile()){nextAct='practice';return openM('profile')}startHostFlow(true)});
   on('#m-test','click',()=>openM('test'));$$('[data-scene]').forEach(b=>b.onclick=()=>{modal=null;testScene(b.dataset.scene)});on('#test-lobby','click',()=>{modal=null;cmd('lobby')});
   on('#bots-add','click',()=>{addBots(G.cfg.total||10);modal=null;draw()});on('#bots-del','click',()=>{removeBots();modal=null;draw()});
-  on('#go-host','click',()=>{errMsg='';if(needProfile()){nextAct='host';return openM('profile')}startHostFlow()});
+  on('#go-host','click',async()=>{errMsg='';if(!await askBox({title:'고택 열기',msg:'고택 열기는 놀이를 진행하는 집사(방장) 한 사람만 누르는 버튼이오.',sub:'초대받은 손님이라면 「고택 입장」으로 들어가 주세요.',ok:'집사요, 열겠소',no:'손님이오'}))return $('#go-join').click();if(needProfile()){nextAct='host';return openM('profile')}startHostFlow()});
   on('#go-join','click',()=>{errMsg='';if(needProfile()){nextAct='join';return openM('profile')}openM('join')});
   on('#ppanel','click',()=>{if(!V||V.phase==='lobby'){nextAct=null;openM('profile')}else if(V.me)openM('player',V.me.token)});
   on('#go-profile','click',()=>{nextAct=null;openM('profile')});
