@@ -500,8 +500,10 @@ function devicePortrait(){const o=window.screen&&window.screen.orientation&&wind
 function fit(){const st=$('#stage'),mr=$('#mroot');if(!st)return;const rot=devicePortrait();const W=rot?Math.max(innerHeight,innerWidth):innerWidth,H=rot?Math.min(innerHeight,innerWidth):innerHeight;
   const s=Math.min(W/STAGE_W,H/STAGE_H);const tf=`translate(-50%,-50%) ${rot?'rotate(90deg) ':''}scale(${s})`;st.style.transform=tf;
   // 세로로 든 폰에서 글을 입력할 땐 창을 똑바로 세워서 키보드 방향과 맞춤
-  const upright=false;mr.className=upright?'upright':'';mr.style.transform=upright?'none':tf;const dr=$('#droot');if(dr)dr.style.transform=tf}
+  const upright=rot&&INPUT_MODALS.includes(modal);mr.className=upright?'upright':'';mr.style.transform=upright?'none':tf;const dr=$('#droot');if(dr)dr.style.transform=tf}
 addEventListener('resize',fit);
+// 세로(회전 잠금)로 연 폰에 한 번만 안내
+setTimeout(()=>{try{if(!matchMedia('(pointer:coarse)').matches||!devicePortrait()||sessionStorage.getItem('rotHint'))return;sessionStorage.setItem('rotHint','1')}catch(e){return}alertBox('폰의 화면 방향 잠금(자물쇠 모양)을 끄고 가로로 들어 주세요. 그래야 이름을 칠 때 키보드도 가로로 나와요.\n잠금을 그대로 두면 글자 입력창만 세로로 떠요.','📱 가로로 돌려 주세요')},900);
 /* ---- 게임 분위기 확인창 (브라우저 기본 창 대신) ---- */
 function askBox(o){if(typeof o==='string')o={msg:o};return new Promise(res=>{const d=$('#droot');
   d.innerHTML=`<div class="dl-dim"></div><div class="dl-box"><div class="dl-t">${esc(o.title||'여쭙니다')}</div>${o.face?`<div class="dl-face">${o.face}</div>`:''}<div class="dl-m">${esc(o.msg)}</div>${o.sub?`<div class="dl-s">${esc(o.sub)}</div>`:''}
