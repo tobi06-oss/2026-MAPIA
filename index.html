@@ -63,7 +63,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .brow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:nowrap}
 .brow button{padding:7px 14px;font-size:16px;white-space:nowrap}
 .gn{display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:10px;background:#c0392b;color:#fff;font-size:13px;line-height:20px}
-.brow.big2 button{font-size:24px;padding:12px 34px}.brow.big2 button small{display:block;font-size:14px;font-weight:600;opacity:.85;margin-top:2px;letter-spacing:0}
+.brow.big2{align-items:stretch}.brow.big2 button{font-size:24px;padding:10px 22px;width:220px;display:flex;align-items:center;justify-content:center;gap:10px}.brow.big2 .bi{font-size:26px;line-height:1}.brow.big2 .bt{display:flex;flex-direction:column;align-items:center;line-height:1.2}.brow.big2 button small{display:block;font-size:14px;font-weight:600;opacity:.85;margin-top:3px;letter-spacing:0}
 .muted2{font-size:14px;opacity:.8}
 .err{color:#ff8a7a;font-size:14px}
 .corner{position:absolute;top:510px;width:150px;height:38px;font-size:16px;padding:0}
@@ -909,7 +909,7 @@ function bottomBox(){
     if(screen==='game'&&!V){const rc=(LS.get('mafia-role')||{}).code||'',long=Date.now()-(window.knockAt||0)>8000;
       const why=NET.stage==='relay'?'직접 연결이 막혀서 인터넷 중계로 들어가는 중… (LTE도 돼요)':NET.stage==='ice'||NET.fails&&NET.stage==='dial'?`고택은 찾았는데 기기끼리 직접 연결이 막혀요 (${NET.fails}번째 재시도) · 같은 와이파이에 붙여 보세요`:NET.stage==='nohost'||long&&NET.stage!=='dial'?'고택이 안 보여요 · 집사 화면이 켜져 있고 문패가 맞는지 확인하세요 (한 폰으로 집사·식구 동시엔 안 돼요)':NET.stage==='srv'&&long?'연결 서버에 못 붙고 있어요 · 인터넷 연결을 확인해 주세요':NET.stage==='dial'?'고택 문을 여는 중…':'';
       return `<div class="btxt">🚪 문패 ${esc(rc)} 대문을 두드리는 중…${why?`<br><small>${why}</small>`:''}</div><div class="brow">${errMsg?`<span class="err">${esc(errMsg)}</span>`:''}${btn('home','처음으로')}</div>`}
-    return `<div class="brow big2">${btn('go-host','🏮 고택 열기<small>집사(방장)만</small>','red')}${btn('go-join',`🚪 고택 입장<small>${LS.get('pending-room')?'문패 '+esc(LS.get('pending-room'))+' 손님은 여기':'초대받은 손님은 여기'}</small>`,'blue')}</div>${errMsg?`<div class="err">${esc(errMsg)}</div>`:''}`}
+    return `<div class="brow big2">${btn('go-host','<span class="bi">🏮</span><span class="bt">고택 열기<small>집사(방장)만</small></span>','red')}${btn('go-join',`<span class="bi">🚪</span><span class="bt">고택 입장${LS.get('pending-room')?`<small>문패 ${esc(LS.get('pending-room'))}</small>`:''}</span>`,'blue')}</div>${errMsg?`<div class="err">${esc(errMsg)}</div>`:''}`}
   const ph=V.phase,me=V.me,H=x=>isHost?`<span class="hw"><span class="hb">${x}</span><small>집사에게만 보여요</small></span>`:'';
   const sel=voteSel?pn(voteSel):null;
   if(ph==='lobby'){const n=V.players.length,c=V.cfg;const bad=n-2*c.mafia<c.gap||n<3||c.mafia<1||pickBad(c);
