@@ -417,21 +417,21 @@ function hostCmd(c){ // 방장 화면 버튼
   if(c.k==='lobby'){g.phase='lobby';g.players.forEach(p=>{p.role=null;p.alive=true});g.winner=null}
   hostSave();broadcast();
 }
-const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_dolsoe:'img/gemini/j_dolsoe.jpg',j_jumo:'img/gemini/j_jumo.jpg',j_ijang:'img/gemini/j_ijang.jpg',j_ijang_F:'img/gemini/j_ijang_F.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
+const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_dolsoe:'img/gemini/j_dolsoe.jpg',j_jumo:'img/gemini/j_jumo.jpg',j_ijang:'img/gemini/j_ijang.jpg',j_ijang_F:'img/gemini/j_ijang_F.jpg',j_podo_F:'img/gemini/j_podo_F.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
 
 const FPOOL={M:['M0','M00','M000','M1','M2','M3','M4','M5','M6'],F:['F0','F1','F2','F3','F4','F5','F6']};
 const JART={mafia:'j_mafia',police:'j_podo',doctor:'j_ijang'};
 const SBART={'종부 마님':'img/sinbun/종부_마님.jpg','막내 아씨':'img/sinbun/막내_아씨.jpg','이웃집 할매':'img/sinbun/이웃집_할매.jpg','하산한 비구니':'img/sinbun/하산한_비구니.jpg','주막 주모':'img/sinbun/주막_주모.jpg','빨래터 아낙':'img/sinbun/빨래터_아낙.jpg','닭 치는 과부':'img/sinbun/닭_치는_과부.jpg','김매는 아낙':'img/sinbun/김매는_아낙.jpg','훈장님':'img/sinbun/훈장님.jpg','이장님':'img/sinbun/이장님.jpg','사랑채 할배':'img/sinbun/사랑채_할배.jpg','한량':'img/sinbun/한량.jpg','떠돌이 소리꾼':'img/sinbun/떠돌이_소리꾼.jpg','돌쇠':'img/sinbun/돌쇠.jpg','소작농':'img/sinbun/소작농.jpg','엿장수':'img/sinbun/엿장수.jpg','낙방한 선비':'img/sinbun/낙방한_선비.jpg'};
 const SBF=["종부 마님", "막내 아씨", "이웃집 할매", "하산한 비구니", "주막 주모", "빨래터 아낙", "닭 치는 과부", "김매는 아낙"],SBM=["훈장님", "이장님", "사랑채 할배", "한량", "떠돌이 소리꾼", "돌쇠", "소작농", "엿장수", "낙방한 선비"];
 function sbKey(f){return f&&f.n?f.n.split(' ').slice(1).join(' '):''}
-function idSrc(job,f,g){if(job==='mafia')return G2.j_mafia;if(job==='doctor'&&g==='F')return G2.j_ijang_F;if(job==='citizen'&&f&&SBART[sbKey(f)])return SBART[sbKey(f)];const k=JART[job];return k?G2[k]:null}
+function idSrc(job,f,g){if(job==='mafia')return G2.j_mafia;if(job==='doctor'&&g==='F')return G2.j_ijang_F;if(job==='police'&&g==='F')return G2.j_podo_F;if(job==='citizen'&&f&&SBART[sbKey(f)])return SBART[sbKey(f)];const k=JART[job];return k?G2[k]:null}
 /* 대기실·진행 중 얼굴: 삿갓·쓰개치마로 얼굴을 가린 식구 (옷 색으로 구분) */
 function avatarSvg(g,i){return `img/avatar/${g==='F'?'F':'M'}${i%8+1}.svg`}
 function faceIdx(p){const ps=(V&&V.players)||[];const same=ps.filter(x=>(x.gender||'M')===(p.gender||'M'));const i=same.findIndex(x=>x.token===p.token);return (i<0?0:i)+1}
 function faceSrc(p){if(p.rev){const r=idSrc(p.rev.job,p.rev.flavor,p.gender);if(r&&p.rev.job!=='mafia')return r}const ps=(V&&V.players)||[],k=ps.findIndex(x=>x.token===p.token);return avatarSvg(p.gender==='F'?'F':'M',k<0?0:k)}
 function faceImg(p,cls){return `<img class="face ${cls||''}" src="${faceSrc(p)}" alt="">`}
 /* ---- 호외(탈락 순간 익살 헤드라인) ---- */
-const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_perfect:'img/hoe/c_perfect.jpg',c_amhaeng:'img/hoe/c_amhaeng.jpg',h_caught:'img/hoe/h_caught.jpg',h_none:'img/hoe/h_none.jpg',h_soldier:'img/hoe/h_soldier.jpg',h_nightDoctor:'img/hoe/h_nightDoctor.jpg',h_nightPolice:'img/hoe/h_nightPolice.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
+const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_perfect:'img/hoe/c_perfect.jpg',c_amhaeng:'img/hoe/c_amhaeng.jpg',h_caught:'img/hoe/h_caught.jpg',h_none:'img/hoe/h_none.jpg',h_tie:'img/hoe/h_tie.jpg',h_soldier:'img/hoe/h_soldier.jpg',h_nightDoctor:'img/hoe/h_nightDoctor.jpg',h_nightPolice:'img/hoe/h_nightPolice.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
 
 const HOE={
  caught:['멍석말이 대성공! 자객 {n}, 관아로 직행','{n}의 가면이 벗겨지다! 고택 식구들 덩실덩실','눈치 백단 종갓집, 자객 {n}을 콕 집어내다','어설픈 연기 들통! {n}, 끌려가며 "억울하오" 연발','자객 {n}, 숨긴 단검이 소맷자락에서 툭!'],
@@ -529,7 +529,7 @@ function viewFor(tok){
   const v={phase:g.phase,code:g.code,round:g.round,cfg:g.cfg,log:g.log,
     players:g.players.map(x=>({token:x.token,name:x.name,intro:x.intro||'',gender:x.gender||'',rev:!x.alive&&x.job?{job:x.job,flavor:x.flavor}:null,alive:x.alive,online:x.token===myToken||!!x.online})),
     votedTokens:g.phase==='vote'?Object.keys(g.votes):null,mafiaLeft:g.phase==='lobby'?null:cntRole('M'),
-    me:p?{token:p.token,name:p.name,role:p.role,job:p.job,flavor:p.flavor,armor:p.armor,alive:p.alive,apply:!!p.apply}:null,applicants:g.players.filter(x=>x.apply).length,remain:Math.max(0,g.endAt-Date.now())};
+    me:p?{token:p.token,name:p.name,gender:p.gender,role:p.role,job:p.job,flavor:p.flavor,armor:p.armor,alive:p.alive,apply:!!p.apply}:null,applicants:g.players.filter(x=>x.apply).length,remain:Math.max(0,g.endAt-Date.now())};
   if(p&&p.role==='M')v.mates=g.players.filter(x=>x.role==='M'&&x!==p).map(x=>x.name);
   if(g.phase==='vote'){v.cands=g.cands;v.revote=g.revote;v.voted=Object.keys(g.votes).length;v.voters=aliveP().length;
     v.myVote=p?g.votes[tok]:undefined;if(v.myVote!==undefined)v.tally=tally(g.votes,g.cands)}
@@ -613,7 +613,7 @@ function jobCard(me,show){if(!show)return `<div class="jobcard jback"><div class
   if(me.job==='citizen'&&f)main=`${SBART[sbKey(f)]?`<img class="sbimg" src="${SBART[sbKey(f)]}" alt="">`:`<div class="jemo">${f.n.split(' ')[0]}</div>`}<div class="jname">${esc(f.n.split(' ').slice(1).join(' '))}</div><div class="jflav">🏮 종갓집 편</div><div class="jab">${esc(f.d)}<br><br>${J.ability}</div>`;
   else main=`${jart(me.job,me.gender)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div>${m&&f?`<div class="jflav">${SBART[sbKey(f)]?`<img class="sbmini" src="${SBART[sbKey(f)]}" alt="">`:''}위장 신분: ${esc(f.n)}</div>`:''}<div class="jab">${J.ability}${m&&f?`<br><br>🎭 들키면 이렇게 둘러대세요: “${esc(f.d)}”`:''}</div>`;
   return `<div class="jobcard ${m?'jm':'jc'} ${show?'':'hide-role'}"><div class="jteam">${m?'刺客 · 자객패':'宗家 · 종갓집'}</div>${main}${me.job==='soldier'?`<div class="jflav">남은 방패: ${me.armor?'🛡️ 1':'없음'}</div>`:''}${m&&show?`<div class="jflav">동료 자객: ${V.mates.map(esc).join(', ')||'없음'}</div>`:''}</div>`}
-function jart(job,g){const k=(job==='doctor'&&g==='F'?'j_ijang_F':0)||JART[job]||(job==='citizen'?(g==='F'?'j_jumo':'j_dolsoe'):null);return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
+function jart(job,g){const k=(g==='F'?{doctor:'j_ijang_F',police:'j_podo_F'}[job]:0)||JART[job]||(job==='citizen'?(g==='F'?'j_jumo':'j_dolsoe'):null);return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
 function revealHtml(job,f){const J=JOBS[job]||JOBS.citizen;
   if(job==='mafia')return `<div class="reveal">정체는 🗡️ <b>자객</b>${f?` · ${esc(f.n)}(으)로 위장하고 있었습니다`:''}</div>`;
   if(job==='citizen'&&f)return `<div class="reveal"><b>${esc(f.n)}</b><br><span class="muted">${esc(f.d)}</span></div>`;
@@ -692,7 +692,7 @@ function spreadHtml(){
     status=tok?'[상태: 억울한 원귀]':kind==='saved'?'[상태: 모두 무사]':kind==='soldier'?'[상태: 습격 격퇴]':'[상태: 고요한 밤]';st2=tok?'다른 식구들의 복수를 지켜보며 응원하시오':news}
   if(typeof head==='string')head={t:head};head=head||{t:''};
   const emo={caught:'⛓️',wrong:'😢',night:'💀',saved:'🌿',soldier:'🛡️',none:'🌙',tie:'🤝',spared:'⚖️'}[kind];
-  const fbArt={soldier:'h_soldier',none:'h_none',caught:'h_caught',wrong:'h_wrong',night:'h_night',saved:'h_saved'}[kind],ak=head.a&&ART[head.a]?head.a:(job==='police'&&kind==='wrong'?'h_police':job==='doctor'&&kind==='night'?'h_nightDoctor':job==='police'&&kind==='night'?'h_nightPolice':fbArt);
+  const fbArt={tie:modal==='result'&&V.result&&!V.result.revote?'h_tie':null,soldier:'h_soldier',none:'h_none',caught:'h_caught',wrong:'h_wrong',night:'h_night',saved:'h_saved'}[kind],ak=head.a&&ART[head.a]?head.a:(job==='police'&&kind==='wrong'?'h_police':job==='doctor'&&kind==='night'?'h_nightDoctor':job==='police'&&kind==='night'?'h_nightPolice':fbArt);
   const pic=ak&&ART[ak]?`<img src="${ART[ak]}" alt="">`:`<div class="efb" style="background-image:url('${stageBg()}')"></div>`;
   const q=QUIP[kind][hsh(head.t)%QUIP[kind].length];
   const P=tok&&V.players.find(p=>p.token===tok);const J=JOBS[job]||JOBS.citizen;
@@ -713,7 +713,8 @@ function verdictHtml(){if(!V.cfg.apply||V.winner!=='M')return'';const vs=V.roles
   return `<div class="sec-box center"><h3>🎁 기념품 수여식</h3>${vs.length?vs.map(p=>`<div style="font-size:19px;margin:4px 0"><b>${esc(p.name)}</b> — 자객으로 승리! 🎁 기념품을 받으세요</div>`).join(''):'<div class="muted">지원해서 자객이 된 사람은 없었습니다</div>'}
   ${others.length?`<div class="muted" style="margin-top:6px">지원했지만 뽑히지 않은 사람: ${others.map(p=>esc(p.name)).join(', ')}</div>`:''}</div>`}
 const QUICK=['👍 좋소','🙅 반대요','🤔 누구로 하오?','⚠️ 의원 조심','📜 어사부터 치자','🛡️ 내일 나를 감싸주시오','🤐 내일은 조용히']; // 밀담 빠른 문구
-function chatHtml(){const c=V.chat||[];return `<div class="chat" id="chatbox">${c.length?c.map(m=>`<div><b>${esc(m.from)}</b> ${esc(m.text)}</div>`).join(''):'<div class="muted">동료 자객과 오늘 밤 작전을 짜보세요</div>'}</div>${me_alive()&&V.phase==='night'?`<div class="qk">${QUICK.map(q=>`<button class="qb" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>${(V.targets||[]).length?`<div class="qk"><span class="qt">🎯 노릴 사람</span>${V.targets.map(t=>`<button class="qb qn" data-q="${esc(pn(t))} 노리자">${esc(pn(t))}</button>`).join('')}</div>`:''}<div style="display:flex;gap:8px;margin-top:8px"><input id="chatin" maxlength="120" placeholder="속닥속닥"><button id="chatsend" class="wood" style="width:auto;flex:0 0 auto;margin:0;padding:0 18px">전송</button></div>`:'<div class="muted" style="margin-top:6px">밀담은 밤에만 보낼 수 있어요</div>'}`}
+function pickLine(t){const p=V.players.find(x=>x.token===t),n=p?p.name:'?';if(p&&p.gender==='F')return n+' 아씨가 좋겠소';if(p&&p.gender==='M')return n+' 도령이 좋겠소';const c=n.charCodeAt(n.length-1);return n+((c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28)?'이':'가')+' 좋겠소'}
+function chatHtml(){const c=V.chat||[];return `<div class="chat" id="chatbox">${c.length?c.map(m=>`<div><b>${esc(m.from)}</b> ${esc(m.text)}</div>`).join(''):'<div class="muted">동료 자객과 오늘 밤 작전을 짜보세요</div>'}</div>${me_alive()&&V.phase==='night'?`<div class="qk">${QUICK.map(q=>`<button class="qb" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>${(V.targets||[]).length?`<div class="qk"><span class="qt">🎯 노릴 사람</span>${V.targets.map(t=>`<button class="qb qn" data-q="${esc(pickLine(t))}">${esc(pn(t))}</button>`).join('')}</div>`:''}<div style="display:flex;gap:8px;margin-top:8px"><input id="chatin" maxlength="120" placeholder="속닥속닥"><button id="chatsend" class="wood" style="width:auto;flex:0 0 auto;margin:0;padding:0 18px">전송</button></div>`:'<div class="muted" style="margin-top:6px">밀담은 밤에만 보낼 수 있어요</div>'}`}
 
 /* ---- 내 메모 (암행어사 조사 결과는 내 폰에만 기록) ---- */
 function notesKey(){return 'mafia-notes-'+(V?V.code:'')}
@@ -885,7 +886,7 @@ function bind(){
   on('#cornerR','click',()=>openM('menu'));
   on('#mclose','click',()=>{modal=null;errMsg='';draw()});on('#sp-tally','click',()=>openM('rtally'));on('#sp-next','click',()=>{modal=null;cmd('next')});on('#dim','click',()=>{modal=null;draw()});
   on('#m-rules','click',()=>openM('rules'));on('#m-dex','click',()=>openM('dex'));on('#m-settings','click',()=>openM('settings'));on('#m-invite','click',()=>openM('invite'));
-  on('#m-apply','click',()=>openM('apply'));on('#m-card','click',()=>openM('card'));on('#m-chat','click',()=>{if(V&&V.phase==='night'&&me_alive()){chatOpen=!chatOpen;draw()}else openM('chat')});on('#cp-close','click',()=>{chatOpen=false;draw()});on('#cp-type','click',()=>openM('chat'));$$('[data-qt]').forEach(b=>b.onclick=()=>{voteSel=b.dataset.qt;act({t:'chat',text:pn(voteSel)+' 노리자'});draw()});on('#m-tally','click',()=>openM('tally'));
+  on('#m-apply','click',()=>openM('apply'));on('#m-card','click',()=>openM('card'));on('#m-chat','click',()=>{if(V&&V.phase==='night'&&me_alive()){chatOpen=!chatOpen;draw()}else openM('chat')});on('#cp-close','click',()=>{chatOpen=false;draw()});on('#cp-type','click',()=>openM('chat'));$$('[data-qt]').forEach(b=>b.onclick=()=>{voteSel=b.dataset.qt;act({t:'chat',text:pickLine(voteSel)});draw()});on('#m-tally','click',()=>openM('tally'));
   on('#m-result','click',()=>openM('result'));on('#m-morning','click',()=>openM('morning'));on('#m-end','click',()=>openM('end'));
   on('#snd-bgm','click',()=>{LS.set('snd-bgm',!sndPref('bgm'));audioUnlock();bgmForPhase();if(!V&&sndPref('bgm'))bgmSet('day');draw()});
   on('#snd-sfx','click',()=>{LS.set('snd-sfx',!sndPref('sfx'));if(sndPref('sfx'))sfx('moktak');draw()});
