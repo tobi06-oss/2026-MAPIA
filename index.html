@@ -330,7 +330,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 /* ===== 방장(사회자) 로직 ===== */
 let G=null, HT=null, hostTick=null;
 const HK='mafia-host-state';
-function defaultCfg(){return{mafia:2,gap:4,minutes:10,night:true,hostPlays:true,police:true,doctor:true,soldier:false,lastWords:60,flavor:true,apply:true,applyW:1.2,gonjang:3}}
+function defaultCfg(){return{total:10,mafia:2,gap:4,minutes:10,night:true,hostPlays:true,police:true,doctor:true,soldier:false,lastWords:60,flavor:true,apply:true,applyW:1.2,gonjang:3}}
 function hostStart(resume){
   if(resume)resume.cfg=Object.assign(defaultCfg(),resume.cfg);
   G=resume||{code:rid(4),cfg:defaultCfg(),chat:[],players:[],phase:'lobby',round:0,log:[],votes:{},nightVotes:{},cands:[],revote:false,result:null,winner:null,endAt:0};
@@ -773,7 +773,7 @@ function chatPanelHtml(){const c=(V.chat||[]).slice(-3);
   <div class="qk">${QUICK.map(q=>`<button class="qb" data-q="${esc(q)}">${esc(q)}</button>`).join('')}<button class="qb" id="cp-type">✍️ 직접 쓰기</button></div></div>`}
 function centerHtml(){const ph=V.phase,me=V.me,al=me&&me.alive;
   if(ph==='result')return V.result?bigResHtml(V.result):'';
-  if(ph==='lobby')return cnote(`🏮 문패 ${esc(V.code)}`,`식구 ${V.players.length}명 입장 · ${isHost?'모두 모이면 시작하세요':'집사가 시작하기를 기다리는 중'}`);
+  if(ph==='lobby'){const n=V.players.length,T=V.cfg.total||n;return cnote(`🏮 문패 ${esc(V.code)}`,`식구 ${n}/${T}명 입장 · ${n>=T?(isHost?'모두 모였소! 호패 나눠주고 시작하시오':'모두 모였소! 곧 시작해요'):`${T-n}명 더 기다리는 중`}`)}
   if(ph==='roles')return cnote('🤫 호패 확인',me?'옆사람 몰래, 아래 버튼을 누르고 있는 동안만 보여요':'호패를 나눠주었습니다');
   if(ph==='day')return cnote('☀️ 사랑방 공론',V.round===1?'돌아가며 이름과 한마디 소개부터!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>');
   if(ph==='vote'){if(!al)return cnote('📜 멍석말이 지목',`${me?'💀 탈락자는 지켜보기만 · ':''}${V.voted}/${V.voters}명 지목`);
@@ -810,7 +810,7 @@ function bottomBox(){
   const ph=V.phase,me=V.me,H=x=>isHost?`<span class="hw"><span class="hb">${x}</span><small>집사에게만 보여요</small></span>`:'';
   const sel=voteSel?pn(voteSel):null;
   if(ph==='lobby'){const n=V.players.length,c=V.cfg;const bad=n-2*c.mafia<c.gap||n<3||c.mafia<1;
-    return `<div class="btxt">${isHost?`식구 ${n}명 입장 · 문패 <b>${esc(V.code)}</b>${bad?` <span class="err">${n<3?'최소 3명':'자객 수 조정 필요'}</span>`:''}`:`문패 <b>${esc(V.code)}</b> · 집사가 시작하기를 기다리는 중`}</div>
+    return `<div class="btxt">${isHost?`식구 ${n}/${c.total||n}명 입장 · 문패 <b>${esc(V.code)}</b>${bad?` <span class="err">${n<3?'최소 3명':'자객 수 조정 필요'}</span>`:''}`:`문패 <b>${esc(V.code)}</b> · 집사가 시작하기를 기다리는 중`}</div>
     <div class="brow">${H(btn('m-invite','📱 초대'))}${H(btn('m-settings','📜 룰 선택'))}${V.cfg.apply&&me?btn('m-apply',me.apply?'✅ 지원함':'🗡️ 자객 지원'):''}${H(`<button id="start" class="red" ${bad?'disabled':''}>호패 나눠주고 시작</button>`)}${isHost?'':btn('leave','나가기')}</div>`}
   if(ph==='roles')return `<div class="btxt">${me?'옆사람 몰래 호패를 확인하세요':'호패를 나눠주었습니다'}</div><div class="brow">${me?btn('m-card','📜 내 호패 보기'):''}${H(btn('day','첫날 시작','red'))}</div>`;
   if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 한마디 소개부터!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}</div>`;
@@ -856,9 +856,10 @@ function modalHtml(){const c=V&&V.cfg;
     <h3>👩 아씨들의 신분 (${SINBUN.F.length})</h3>${SINBUN.F.map(row).join('')}<h3>👨 도령들의 신분 (${SINBUN.M.length})</h3>${SINBUN.M.map(row).join('')}`}
   case 'invite':{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');
     return `<h2>📱 식구 초대</h2><div class="center"><div class="muted">고택 문패</div><div class="code">${esc(V.code)}</div><div id="qr"></div><div class="muted" style="word-break:break-all">${esc(link)}</div>${btn('share','🔗 링크 공유/복사')}</div>`}
-  case 'settings':{const n=V.players.length,mx=maxMafia(n,c.gap);const st=(k,v)=>`<div class="step"><button class="wood" data-c="${k}" data-d="-1">−</button><b>${v}</b><button class="wood" data-c="${k}" data-d="1">+</button></div>`;
+  case 'settings':{const n=c.total||V.players.length,mx=maxMafia(n,c.gap);const st=(k,v)=>`<div class="step"><button class="wood" data-c="${k}" data-d="-1">−</button><b>${v}</b><button class="wood" data-c="${k}" data-d="1">+</button></div>`;
     return `<h2>📜 룰 선택</h2>
-    <label>🗡️ 자객 수 (지금 인원으로 최대 ${mx}명)</label>${st('mafia',c.mafia+'명')}
+    <label>👥 총인원 (미리 정해두면 다 모였을 때 바로 시작 · 지금 ${V.players.length}명 입장)</label>${st('total',n+'명')}
+    <label>🗡️ 자객 수 (총 ${n}명 기준 최대 ${mx}명)</label>${st('mafia',c.mafia+'명')}
     <div class="muted" style="margin-top:4px">💡 추천: <b>${recMafia(n)}</b> (총 인원의 20~30%)${inRec(n,c.mafia)?' · 지금 설정은 추천 범위예요':''}<br>종갓집 ${n-c.mafia}명 · 규칙: 종갓집이 자객보다 최소 ${c.gap}명 많아야 함</div>
     <label>종갓집-자객 최소 차이</label>${st('gap',c.gap+'명')}
     <label>☀️ 오시(午時) 공론 시간 (끝나면 자동으로 전원 지목)</label>${st('minutes',fmtMin(c.minutes))}
@@ -901,7 +902,7 @@ function bind(){
   const startHostFlow=(practice)=>{modal=null;isHost=true;screen='game';draw();waitPeer(()=>{if(!LOCAL&&!window.Peer){errMsg='연결 라이브러리를 못 불러왔어요. 인터넷을 확인하세요';screen='home';isHost=false;return draw()}hostStart();if(practice===true){G.cfg.minutes=1;G.cfg.lastWords=10;addBots(10)}})};
   on('#go-practice','click',()=>{errMsg='';if(needProfile()){nextAct='practice';return openM('profile')}startHostFlow(true)});
   on('#m-test','click',()=>openM('test'));$$('[data-scene]').forEach(b=>b.onclick=()=>{modal=null;testScene(b.dataset.scene)});on('#test-lobby','click',()=>{modal=null;cmd('lobby')});
-  on('#bots-add','click',()=>{addBots(10);modal=null;draw()});on('#bots-del','click',()=>{removeBots();modal=null;draw()});
+  on('#bots-add','click',()=>{addBots(G.cfg.total||10);modal=null;draw()});on('#bots-del','click',()=>{removeBots();modal=null;draw()});
   on('#go-host','click',()=>{errMsg='';if(needProfile()){nextAct='host';return openM('profile')}startHostFlow()});
   on('#go-join','click',()=>{errMsg='';if(needProfile()){nextAct='join';return openM('profile')}openM('join')});
   on('#ppanel','click',()=>{if(!V){nextAct=null;openM('profile')}else if(V.me)openM('player',V.me.token)});
@@ -924,8 +925,8 @@ function bind(){
   on('#leave','click',()=>{act({t:'leave'});LS.del('mafia-role');location.hash='';setTimeout(()=>location.reload(),300)});
   on('#kick','click',()=>{cmd('kick',modalArg);modal=null;draw()});on('#m-handover','click',()=>openM('handover'));
   $$('[data-ho]').forEach(b=>b.onclick=async()=>{const t=b.dataset.ho;if(await askBox({title:'👑 집사 넘기기',msg:`${pn(t)}님에게 집사를 넘기시겠소?`,sub:'넘기면 이 폰은 일반 식구가 되고, 놀이는 그대로 이어져요.',ok:'넘기겠소',no:'그만두기'}))handOver(t)});
-  $$('[data-c]').forEach(b=>b.onclick=()=>{const k=b.dataset.c,d=+b.dataset.d,c=G.cfg,n=G.players.length;const lim={mafia:[1,Math.max(1,maxMafia(n,c.gap))],gap:[0,10],minutes:[.5,60],lastWords:[0,120],applyW:[1,2],gonjang:[1,10]}[k];
-    const step=k==='applyW'?.1:k==='lastWords'?15:k==='minutes'&&(d<0?c[k]<=3:c[k]<3)?.5:1;let v=Math.round(Math.min(lim[1],Math.max(lim[0],c[k]+d*step))*100)/100;const patch={[k]:v};if(k==='gap')patch.mafia=Math.max(1,Math.min(c.mafia,maxMafia(n,v)));cmd('cfg',patch)});
+  $$('[data-c]').forEach(b=>b.onclick=()=>{const k=b.dataset.c,d=+b.dataset.d,c=G.cfg,n=c.total||G.players.length;const lim={total:[3,20],mafia:[1,Math.max(1,maxMafia(n,c.gap))],gap:[0,10],minutes:[.5,60],lastWords:[0,120],applyW:[1,2],gonjang:[1,10]}[k];
+    const step=k==='applyW'?.1:k==='lastWords'?15:k==='minutes'&&(d<0?c[k]<=3:c[k]<3)?.5:1;let v=Math.round(Math.min(lim[1],Math.max(lim[0],c[k]+d*step))*100)/100;const patch={[k]:v};if(k==='gap')patch.mafia=Math.max(1,Math.min(c.mafia,maxMafia(n,v)));if(k==='total')patch.mafia=Math.max(1,Math.min(c.mafia,maxMafia(v,c.gap)));cmd('cfg',patch)});
   on('#night','change',e=>cmd('cfg',{night:e.target.checked}));
   $$('[data-job]').forEach(b=>b.onchange=()=>cmd('cfg',{[b.dataset.job]:b.checked}));
   on('#hp','change',e=>cmd('cfg',{hostPlays:e.target.checked}));
