@@ -899,7 +899,7 @@ function centerHtml(){const ph=V.phase,me=V.me,al=me&&me.alive;
   if(ph==='result')return V.result?bigResHtml(V.result):'';
   if(ph==='lobby'){const n=V.players.length,T=V.cfg.total||n;return cnote(`🏮 문패 ${esc(V.code)}`,`식구 ${n}/${T}명 입장 · ${n>=T?(isHost?'모두 모였소! 시작하시오':'모두 모였소! 곧 시작해요'):`${T-n}명 더 기다리는 중`}`)}
   if(ph==='roles')return cnote('🤫 호패 확인',me?'옆사람 몰래, 아래 버튼을 누르고 있는 동안만 보여요':'호패를 나눠주었습니다');
-  if(ph==='day')return cnote('☀️ 사랑방 공론',(V.round===1?'돌아가며 이름과 신분을 소개하세요!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>')+'<div class="cn-sub">○○○ 도령(아씨) 또는 신분으로 공론에 참여하면 됩니다</div>');
+  if(ph==='day')return cnote('☀️ 사랑방 공론',(V.round===1?'돌아가며 이름과 신분을 소개하세요!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>')+'<div class="cn-sub">○○님 또는 신분으로 공론에 참여하면 됩니다</div>');
   if(ph==='vote'){if(!al)return cnote('📜 멍석말이 지목',`${me?'💀 탈락자는 지켜보기만 · ':''}${V.voted}/${V.voters}명 지목`);
     if(V.myVote!==undefined)return cnote(`✅ ${esc(pn(V.myVote))} 지목`,`다른 식구를 기다리는 중 (${V.voted}/${V.voters})`);
     return cnote(V.revote?'🤝 동점자 재지목':'📜 멍석말이 지목',voteSel?`${esc(pn(voteSel))} 선택됨 · 아래 버튼으로 확정`:'좌우 명단에서 한 명을 고르시오','rd')}
