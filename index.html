@@ -234,7 +234,7 @@ const JOBS={
   police:{name:'암행어사',emo:'📜',team:'C',ability:'마패를 품고 밤마다 한 명의 뒤를 캐서, 자객인지 아닌지 알아냅니다.'},
   doctor:{name:'의원',emo:'🌿',team:'C',ability:'약방 의원. 밤마다 한 명(자신 포함)을 돌봐, 자객이 노려도 살려냅니다.'},
   soldier:{name:'호위무사',emo:'🛡️',team:'C',ability:'자객의 칼을 한 번 막아냅니다. 두 번은 못 막아요.'},
-  citizen:{name:'종갓집 식구',emo:'🏮',team:'C',ability:'특별한 재주는 없지만, 눈치와 공론으로 자객을 가려내세요!'}};
+  citizen:{name:'아씨·도령',emo:'🏮',team:'C',ability:'특별한 재주는 없지만, 눈치와 공론으로 자객을 가려내세요!'}};
 const TEAM={M:'자객패',C:'종갓집'};
 // [이모지+신분, 소개, 천한신분 여부(자객 위장 후보)]
 const SINBUN={
@@ -527,7 +527,7 @@ function me_alive(){return V.me&&V.me.alive}
 function tallyHtml(t,mark){const tot=t.reduce((a,b)=>a+b.n,0)||1;const mx=Math.max(...t.map(x=>x.n));return t.map(x=>`<div class="bar"><i style="width:${x.n/tot*100}%"></i><span>${esc(x.name)} · ${x.n}표${mark&&x.n===mx&&x.n>0?' ◀':''}</span></div>`).join('')}
 function jobCard(me,show){if(!show)return `<div class="jobcard jback"><div class="jteam">號牌</div><div class="jemo">📜</div><div class="jname">호패</div><div class="jab">손가락으로 누르고 있는 동안만 보여요.<br>옆사람이 못 보게 가리고 확인하세요!</div></div>`;const J=JOBS[me.job]||JOBS.citizen,m=me.role==='M',f=me.flavor;
   let main;
-  if(me.job==='citizen'&&f)main=`${SBART[sbKey(f)]?`<img class="sbimg" src="${SBART[sbKey(f)]}" alt="">`:`<div class="jemo">${f.n.split(' ')[0]}</div>`}<div class="jname">${esc(f.n.split(' ').slice(1).join(' '))}</div><div class="jflav">🏮 종갓집 식구</div><div class="jab">${esc(f.d)}<br><br>${J.ability}</div>`;
+  if(me.job==='citizen'&&f)main=`${SBART[sbKey(f)]?`<img class="sbimg" src="${SBART[sbKey(f)]}" alt="">`:`<div class="jemo">${f.n.split(' ')[0]}</div>`}<div class="jname">${esc(f.n.split(' ').slice(1).join(' '))}</div><div class="jflav">🏮 종갓집 편</div><div class="jab">${esc(f.d)}<br><br>${J.ability}</div>`;
   else main=`${jart(me.job)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div>${m&&f?`<div class="jflav">${SBART[sbKey(f)]?`<img class="sbmini" src="${SBART[sbKey(f)]}" alt="">`:''}위장 신분: ${esc(f.n)}</div>`:''}<div class="jab">${J.ability}${m&&f?`<br><br>🎭 들키면 이렇게 둘러대세요: “${esc(f.d)}”`:''}</div>`;
   return `<div class="jobcard ${m?'jm':'jc'} ${show?'':'hide-role'}"><div class="jteam">${m?'刺客 · 자객패':'宗家 · 종갓집'}</div>${main}${me.job==='soldier'?`<div class="jflav">남은 방패: ${me.armor?'🛡️ 1':'없음'}</div>`:''}${m&&show?`<div class="jflav">동료 자객: ${V.mates.map(esc).join(', ')||'없음'}</div>`:''}</div>`}
 function jart(job,g){const k=JART[job]||(job==='citizen'?(g==='F'?'j_jumo':'j_dolsoe'):null);return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
@@ -715,7 +715,7 @@ function modalHtml(){const c=V&&V.cfg;
     <label>종갓집-자객 최소 차이</label>${st('gap',c.gap+'명')}
     <label>☀️ 오시(午時) 공론 시간 (끝나면 자동으로 전원 지목)</label>${st('minutes',fmtMin(c.minutes))}
     <label class="chk"><input type="checkbox" id="night" ${c.night?'checked':''}> 🌙 자시(子時) 사용 (자객이 몰래 1명을 해침)</label>
-    <label>특수 직업 (나머지는 종갓집 식구)</label>
+    <label>특수 직업 (나머지는 아씨·도령 신분)</label>
     <label class="chk"><input type="checkbox" data-job="police" ${c.police?'checked':''}> 📜 암행어사 · 밤에 한 명 정체 조사</label>
     <label class="chk"><input type="checkbox" data-job="doctor" ${c.doctor?'checked':''}> 🌿 의원 · 밤에 한 명 살려냄</label>
     <label class="chk"><input type="checkbox" data-job="soldier" ${c.soldier?'checked':''}> 🛡️ 호위무사 · 칼 한 번 막아냄</label>
