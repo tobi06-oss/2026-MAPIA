@@ -819,7 +819,7 @@ function modalHtml(){const c=V&&V.cfg;
   switch(modal){
   case 'profile':return `<h2>✏️ 내 호패 정보</h2><label>내 이름</label><input id="nm" maxlength="12" value="${esc(LS.get('mafia-name')||'')}" placeholder="이름 (예: 김아씨, 박도령)">
     <label>성별 (신분 카드를 맞춰 드려요)</label><div class="gsel"><button type="button" data-g="F" class="${LS.get('mafia-gender')==='F'?'on':''}"><img class="face gs" src="${avatarSvg('F',1)}" alt=""> 여 · 아씨</button><button type="button" data-g="M" class="${LS.get('mafia-gender')==='M'?'on':''}"><img class="face gs" src="${avatarSvg('M',0)}" alt=""> 남 · 도령</button></div>
-    <label>한마디 소개 (처음 만난 사이니까!)</label><input id="it" maxlength="30" value="${esc(LS.get('mafia-intro')||'')}" placeholder="예: 커피 없으면 못 사는 ENFP">
+    <label>한마디 소개 (처음 만난 사이니까!)</label><input id="it" maxlength="30" value="${esc(LS.get('mafia-intro')||'')}" placeholder="예: 00년생 / 커피 없으면 못 사는 ENFP">
     <div class="err">${esc(errMsg)}</div><button class="red" id="save-profile">${nextAct==='host'?'저장하고 고택 열기':nextAct==='practice'?'저장하고 연습 시작':nextAct==='join'?'저장하고 입장하기':'저장'}</button>`;
   case 'join':return `<h2>🚪 고택 입장</h2><label>고택 문패 (집사에게 받은 4자리 코드)</label><input id="cd" maxlength="4" style="text-transform:uppercase;letter-spacing:8px;font-size:26px;text-align:center" value="${esc(params.get('room')||'')}" placeholder="ABCD">
     <div class="muted" style="margin-top:8px">${esc(LS.get('mafia-name')||'')} (으)로 입장합니다</div><div class="err">${esc(errMsg)}</div><button class="red" id="jn">입장하기</button>`;
