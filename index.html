@@ -499,7 +499,7 @@ function devicePortrait(){const sw=window.screen&&window.screen.width,sh=window.
 function fit(){const st=$('#stage'),mr=$('#mroot');if(!st)return;const rot=devicePortrait();const W=rot?Math.max(innerHeight,innerWidth):innerWidth,H=rot?Math.min(innerHeight,innerWidth):innerHeight;
   const s=Math.min(W/STAGE_W,H/STAGE_H);const tf=`translate(-50%,-50%) ${rot?'rotate(90deg) ':''}scale(${s})`;st.style.transform=tf;
   // 세로로 든 폰에서 글을 입력할 땐 창을 똑바로 세워서 키보드 방향과 맞춤
-  const upright=rot&&INPUT_MODALS.includes(modal);mr.className=upright?'upright':'';mr.style.transform=upright?'none':tf;const dr=$('#droot');if(dr)dr.style.transform=tf}
+  const upright=false;mr.className=upright?'upright':'';mr.style.transform=upright?'none':tf;const dr=$('#droot');if(dr)dr.style.transform=tf}
 addEventListener('resize',fit);
 /* ---- 게임 분위기 확인창 (브라우저 기본 창 대신) ---- */
 function askBox(o){if(typeof o==='string')o={msg:o};return new Promise(res=>{const d=$('#droot');
