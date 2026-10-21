@@ -388,7 +388,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 /* ===== 방장(사회자) 로직 ===== */
 let G=null, HT=null, hostTick=null;
 const HK='mafia-host-state';
-function defaultCfg(){return{total:10,mafia:3,gap:4,minutes:10,night:true,hostPlays:true,police:true,doctor:true,soldier:true,lastWords:60,flavor:true,apply:true,applyW:1.2,gonjang:3,pickMafia:false,mafiaPick:[],shrink:true}}
+function defaultCfg(){return{total:10,mafia:3,gap:4,minutes:10,night:true,hostPlays:true,police:true,doctor:true,soldier:true,lastWords:60,flavor:true,apply:true,applyW:1.2,gonjang:3,pickMafia:false,mafiaPick:[]}}
 function hostStart(resume){
   if(resume){resume.cfg=Object.assign(defaultCfg(),resume.cfg);resume.cfg.night=true;resume.cfg.apply=true} // 자시·자객 지원은 항상 사용
   G=resume||{code:rid(4),cfg:defaultCfg(),chat:[],players:[],phase:'lobby',round:0,log:[],votes:{},nightVotes:{},cands:[],revote:false,result:null,winner:null,endAt:0,record:LS.get('mafia-record')||[]};
@@ -545,8 +545,7 @@ function hoe(k,p){const L=[];HOE[k].forEach(x=>{const o=typeof x==='string'?{t:x
 function hoeVote(p){if(p.role==='M')return hoe(p.flavor&&Math.random()<.5?'caughtCover':'caught',p);
   const sp=null;return hoe(sp&&Math.random()<.7?sp:'wrong',p)}
 function hoeNight(p){return hoe('night',p)} // 신분은 숨기고 이름만(그림은 성별대로 무작위)
-function dayMinutes(){const m=G.cfg.minutes,n=G.players.length,al=aliveP().length;if(!G.cfg.shrink||!n||al>=n)return m;return Math.max(Math.min(m,2),Math.round(m*al/n*2)/2)} // 남은 인원 비율만큼 줄임(30초 단위, 최소 2분)
-function startDay(){G.round++;G.phase='day';G.dayMin=dayMinutes();if(G.dayMin<G.cfg.minutes)G.log.push(`${G.round}일째 공론: 사람이 줄어 ${fmtMin(G.dayMin)}으로 짧아짐`);G.endAt=Date.now()+G.dayMin*60000;G.votes={};G.revote=false}
+function startDay(){G.round++;G.phase='day';G.endAt=Date.now()+G.cfg.minutes*60000;G.votes={};G.revote=false}
 function startVote(revote){G.phase='vote';G.votes={};G.revote=revote;if(!revote)G.cands=aliveP().map(p=>p.token)}
 function hostTimer(){if(G&&G.phase==='day'&&Date.now()>=G.endAt){startVote(false);hostSave();broadcast()}if(G&&G.phase==='defense'&&Date.now()>=G.endAt){G.phase='judge';hostSave();broadcast()}botTick()}
 /* ---- 연습용 컴퓨터 식구 ---- */
@@ -630,7 +629,7 @@ function standings(rec){const M={};(rec||[]).forEach(g=>g.ps.forEach(p=>{const x
   return Object.values(M).sort((a,b)=>b.win-a.win||b.mvp-a.mvp||a.n-b.n)}
 function viewFor(tok){
   const g=G,p=g.players.find(p=>p.token===tok);
-  const v={phase:g.phase,code:g.code,gid:g.gid||'',round:g.round,gameNo:g.gameNo||1,record:(g.record||[]).slice(-30),dayMin:g.dayMin||g.cfg.minutes,cfg:tok===myToken?g.cfg:Object.assign({},g.cfg,{mafiaPick:[]}),log:g.log,
+  const v={phase:g.phase,code:g.code,gid:g.gid||'',round:g.round,gameNo:g.gameNo||1,record:(g.record||[]).slice(-30),cfg:tok===myToken?g.cfg:Object.assign({},g.cfg,{mafiaPick:[]}),log:g.log,
     players:g.players.map(x=>({token:x.token,name:x.name,intro:x.intro||'',gender:x.gender||'',rev:!x.alive&&x.job?(g.phase==='end'||x.job==='mafia'?{job:x.job,flavor:x.flavor}:{job:'citizen',flavor:null}):null,alive:x.alive,online:x.token===myToken||!!x.online})),
     votedTokens:g.phase==='vote'?Object.keys(g.votes):null,mafiaLeft:g.phase==='lobby'?null:cntRole('M'),
     me:p?{token:p.token,name:p.name,gender:p.gender,role:p.role,job:p.job,flavor:p.flavor,armor:p.armor,alive:p.alive,covers:p.covers||null,apply:!!p.apply}:null,applicants:g.players.filter(x=>x.apply).length,remain:Math.max(0,g.endAt-Date.now())};
@@ -987,7 +986,6 @@ function modalHtml(){const c=V&&V.cfg;
     <div class="muted" style="margin-top:4px">💡 추천: <b>${recMafia(n)}</b> (총 인원의 20~30%)${inRec(n,c.mafia)?' · 지금 설정은 추천 범위예요':''}<br>종갓집 ${n-c.mafia}명 · 규칙: 종갓집이 자객보다 최소 ${c.gap}명 많아야 함</div>
     <label>종갓집-자객 최소 차이</label>${st('gap',c.gap+'명')}
     <label>☀️ 오시(午時) 공론 시간 (끝나면 자동으로 전원 지목)</label>${st('minutes',fmtMin(c.minutes))}
-    <label class="chk"><input type="checkbox" data-job="shrink" ${c.shrink?'checked':''}> ⏳ 사람이 줄면 공론 시간도 줄이기 (남은 인원 비율만큼, 최소 2분)</label>
     <label>특수 직업 (나머지는 아씨·도령 신분)</label>
     <label class="chk"><input type="checkbox" data-job="police" ${c.police?'checked':''}> 📜 암행어사 · 밤에 한 명 정체 조사</label>
     <label class="chk"><input type="checkbox" data-job="doctor" ${c.doctor?'checked':''}> 🌿 의원 · 밤에 한 명 살려냄</label>
