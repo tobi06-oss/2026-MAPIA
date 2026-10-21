@@ -100,7 +100,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .paper button{margin-top:10px}
 .paper .wood,.paper .red{width:100%;padding:12px}
 .paper .step{display:flex;align-items:center;gap:8px}.paper .step button{width:46px;height:40px;margin:0;padding:0;font-size:22px}.paper .step b{flex:1;text-align:center;font-size:19px}
-.muted{color:#7a6851;font-size:14px;line-height:1.5}.paper .rd{color:#a8322a}.paper .bl{color:#28536b}
+.muted{color:#7a6851;font-size:14px;line-height:1.5}.paper .rd{color:#a8322a}.paper .bl{color:#28536b}.sp{color:#7fd08a;font-weight:700}.paper .sp{color:#2a8a3a}
 .center{text-align:center}
 .big{font-size:30px;font-weight:700;margin:10px 0;word-break:keep-all}
 .code{font-size:44px;font-weight:700;letter-spacing:8px}
@@ -758,7 +758,7 @@ function recordHtml(){const rec=V.record||[];if(!rec.length)return '<h2>📊 전
 function endSummaryHtml(){const R=V.roles,outs=R.filter(p=>!p.alive).sort((a,b)=>((a.out&&a.out.n)||99)-((b.out&&b.out.n)||99)),alive=R.filter(p=>p.alive);
   const nM=R.filter(p=>p.role==='M').length,days=Math.max(1,V.round||1);
   const row=(p,tag)=>{const J=JOBS[p.job]||JOBS.citizen,f=p.flavor,src=idSrc(p.job,f,p.gender);const jn=p.job==='citizen'&&f?esc(f.n):J.emo+' '+J.name;
-    return `<div class="es-row ${p.alive?'':'gone'}"><span class="es-tag">${tag}</span>${src?`<img class="es-face" src="${src}" alt="">`:`<span class="es-face es-emo">${J.emo}</span>`}<div class="es-txt"><b>${esc(p.name)}</b> <span class="${p.role==='M'?'rd':'bl'}">${jn}</span><div class="es-how">${p.alive?'살아남음':p.out?`${p.out.r}일째 ${p.out.how==='left'?'자리를 비움':p.out.how==='vote'?'관아 송치':'밤에 피습'}`:'탈락'}${p.job==='mafia'&&f?` · ${esc(f.n)} 행세`:''}${p.apply&&applyOn(V.cfg)?' · 지원':''}</div></div></div>`};
+    return `<div class="es-row ${p.alive?'':'gone'}"><span class="es-tag">${tag}</span>${src?`<img class="es-face" src="${src}" alt="">`:`<span class="es-face es-emo">${J.emo}</span>`}<div class="es-txt"><b>${esc(p.name)}</b> <span class="${p.role==='M'?'rd':p.job==='citizen'?'bl':'sp'}">${jn}</span><div class="es-how">${p.alive?'살아남음':p.out?`${p.out.r}일째 ${p.out.how==='left'?'자리를 비움':p.out.how==='vote'?'관아 송치':'밤에 피습'}`:'탈락'}${p.job==='mafia'&&f?` · ${esc(f.n)} 행세`:''}${p.apply&&applyOn(V.cfg)?' · 지원':''}</div></div></div>`};
   return `<div class="esum"><div class="es-h">📜 고택 일지</div><div class="es-meta">${days}일 동안 · 자객 ${nM}명 · 식구 ${R.length-nM}명</div>
   ${outs.length?`<div class="es-sec">탈락 순서</div><div class="es-grid">${outs.map((p,i)=>row(p,i+1)).join('')}</div>`:''}${alive.length?`<div class="es-sec">살아남은 이</div><div class="es-grid">${alive.map(p=>row(p,'★')).join('')}</div>`:''}</div>`}
 function arrestHtml(){if(!applyOn(V.cfg)||V.winner==='M')return'';const ms=V.roles.filter(p=>p.apply&&p.job==='mafia').map(p=>esc(p.name));if(!ms.length)return'';
