@@ -848,16 +848,16 @@ function hudHtml(){const alive=V.players.filter(p=>p.alive).length;
   <div class="hud2 dark">${phaseTxt}${V.phase==='day'?': <span class="tm"></span>':''}${V.phase==='vote'?` ${V.voted}/${V.voters}`:''}${V.phase==='defense'?': <span class="tm"></span>':''}${V.phase==='judge'?` ${V.jvoted}/${V.jneed}`:''}${V.phase==='result'&&V.lastWords?` · 마지막 한마디 <span class="tm"></span>`:''}</div>`}
 let chatOpen=true;
 // 폰은 홈 화면에 앱으로 추가해 열도록 안내(주소창 없는 전체 화면, 아이폰 사파리는 웹페이지 전체 화면을 막아둠)
-const UA=navigator.userAgent,IOS=/iP(hone|od)/.test(UA)||(/Mac/.test(UA)&&navigator.maxTouchPoints>1),ANDROID=/Android/i.test(UA),MOBILE=IOS||ANDROID,KAKAO=/KAKAOTALK/i.test(UA),INAPP=KAKAO||/NAVER|Instagram|FBAN|FBAV|Line\//i.test(UA),
+const UA=navigator.userAgent,IOS=/iP(hone|od)/.test(UA)||(/Mac/.test(UA)&&navigator.maxTouchPoints>1),ANDROID=/Android/i.test(UA),MOBILE=IOS||ANDROID,KAKAO=/KAKAOTALK/i.test(UA),SAMSUNG=/SamsungBrowser/i.test(UA),INAPP=KAKAO||/NAVER|Instagram|FBAN|FBAV|Line\//i.test(UA),
   STANDALONE=navigator.standalone||matchMedia('(display-mode: standalone),(display-mode: fullscreen)').matches;
 let instP=null,installed=false;addEventListener('beforeinstallprompt',e=>{e.preventDefault();instP=e;if(modal==='install')draw()});addEventListener('appinstalled',()=>{installed=true;if(modal==='install')draw()});
 function needInstall(){let sk=null;try{sk=sessionStorage.getItem('skip-install')}catch(e){}return MOBILE&&!STANDALONE&&!sk}
 function installHtml(){const room=params.get('room')||LS.get('pending-room')||'';
   const step=(n,t)=>`<div class="istep"><b>${n}</b><span>${t}</span></div>`;
-  const how=INAPP?step(1,`지금은 ${KAKAO?'카카오톡':'앱'} 안의 브라우저라 홈 화면에 추가가 안 돼요. 아래 버튼이나 오른쪽 위·아래 메뉴(⋯)에서 <b>${IOS?'Safari로 열기':'다른 브라우저로 열기'}</b>를 누르세요.`)+(KAKAO?`<button class="red" id="inst-ext" style="margin:6px 0 4px">🌐 ${IOS?'Safari':'크롬'}로 열기</button>`:'')
+  const how=INAPP?step(1,`지금은 ${KAKAO?'카카오톡':'앱'} 안의 브라우저라 홈 화면에 추가가 안 돼요. ${KAKAO?'아래 버튼을 누르세요. 안 되면 ':''}${IOS?'화면 오른쪽 아래 버튼에서 <b>Safari로 열기</b>':'오른쪽 위 메뉴(⋮)에서 <b>다른 브라우저로 열기</b>'}를 누르세요.`)+(KAKAO?`<button class="red" id="inst-ext" style="margin:6px 0 4px">🌐 ${IOS?'Safari로 열기':'인터넷 앱(크롬 등)으로 열기'}</button>`:'')
     :IOS?step(1,'화면 아래(또는 주소창 옆)의 <b>공유 버튼</b>(<span class="ic"><svg class="shr" viewBox="0 0 24 24" width="20" height="20" aria-label="공유 버튼"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 10.5H6.5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>)을 누르세요')+step(2,'목록을 내려 <b>홈 화면에 추가</b> → 오른쪽 위 <b>추가</b>')+step(3,'홈 화면에 생긴 <b>🗡️ 자객 소동</b> 아이콘으로 여세요')
     :installed?step('✓','설치됐어요! 홈 화면(또는 앱 목록)의 <b>🗡️ 자객 소동</b> 아이콘으로 여세요')
-    :(instP?`<button class="red" id="inst-go" style="margin:6px 0 4px">📲 앱 설치하기</button>`:step(1,'오른쪽 위 메뉴 <b>⋮</b> → <b>홈 화면에 추가</b> (또는 <b>앱 설치</b>)'))+step(instP?1:2,'홈 화면에 생긴 <b>🗡️ 자객 소동</b> 아이콘으로 여세요');
+    :(instP?`<button class="red" id="inst-go" style="margin:6px 0 4px">📲 앱 설치하기</button>`:step(1,SAMSUNG?'아래 메뉴 <b>≡</b> → <b>현재 페이지 추가</b> → <b>홈 화면</b>':'오른쪽 위 메뉴 <b>⋮</b> → <b>홈 화면에 추가</b> (또는 <b>앱 설치</b>)'))+step(instP?1:2,'홈 화면에 생긴 <b>🗡️ 자객 소동</b> 아이콘으로 여세요');
   return `<h2>📲 앱으로 받아서 하기</h2><div class="muted">주소창 없이 꽉 찬 화면으로, 더 안정적으로 할 수 있어요. 처음 한 번만 하면 돼요.</div><div class="isteps">${how}</div>
   ${room?`<div class="icode">앱을 열고 <b>고택 입장</b>에 문패 <b>${esc(room)}</b> 를 넣으세요</div>`:''}
   <button class="wood" id="inst-skip" style="margin-top:8px">그냥 이 화면에서 할게요</button>`}
