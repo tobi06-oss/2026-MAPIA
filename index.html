@@ -627,9 +627,9 @@ function endGame(w){G.winner=w;G.phase='end';const st=G.stats||{wrong:0,mafia0:0
   G.mvp=pickMvp(w);G.record=G.record||[];if(!G.players.some(isBot))G.record.push({no:G.gameNo||G.record.length+1,w,ending:G.ending,mvp:G.mvp,ps:G.players.map(p=>({token:p.token,name:p.name,team:p.role,alive:p.alive}))});LS.set('mafia-record',G.record)}
 function pickMvp(w){const st=G.stats||{},L=[],add=(t,why)=>{const p=G.players.find(x=>x.token===t);if(p&&!L.some(x=>x.name===p.name))L.push({name:p.name,why})};
   if(w==='M'){const al=aliveP().filter(p=>p.role==='M');al.forEach(p=>add(p.token,al.length===1&&(st.mafia0||0)>1?'동료를 다 잃고 홀로 버틴 독종 자객':'끝까지 살아남은 자객'))}
-  else{Object.entries(st.pol||{}).forEach(([t,n])=>add(t,`자객 ${n}명을 찾아낸 암행어사`));Object.entries(st.save||{}).forEach(([t,n])=>add(t,`습격을 ${n}번 막아낸 호위무사`));
+  else{Object.entries(st.pol||{}).sort((a,b)=>b[1]-a[1]).forEach(([t,n])=>add(t,`자객 ${n}명을 찾아낸 암행어사`));Object.entries(st.save||{}).sort((a,b)=>b[1]-a[1]).forEach(([t,n])=>add(t,`습격을 ${n}번 막아낸 호위무사`));
     const pk=Object.entries(st.pick||{}),mx=Math.max(0,...pk.map(x=>x[1]));if(mx>0)pk.filter(x=>x[1]===mx).forEach(([t])=>add(t,`자객 지목왕 (${mx}번 적중)`))}
-  return L.slice(0,4)}
+  return L.slice(0,2)} // MVP는 최대 두 명
 function standings(rec){const M={};(rec||[]).forEach(g=>g.ps.forEach(p=>{const x=M[p.token]||(M[p.token]={name:p.name,n:0,win:0,mvp:0});x.name=p.name;x.n++;if(p.team===g.w)x.win++;if(g.mvp.some(m=>m.name===p.name))x.mvp++}));
   return Object.values(M).sort((a,b)=>b.win-a.win||b.mvp-a.mvp||a.n-b.n)}
 function viewFor(tok){
