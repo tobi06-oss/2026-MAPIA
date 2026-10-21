@@ -659,7 +659,7 @@ function bottomBox(){
   const sel=voteSel?pn(voteSel):null;
   if(ph==='lobby'){const n=V.players.length,c=V.cfg;const bad=n-2*c.mafia<c.gap||n<3||c.mafia<1;
     return `<div class="btxt">${isHost?`식구 ${n}명 입장 · 문패 <b>${esc(V.code)}</b>${bad?` <span class="err">${n<3?'최소 3명':'자객 수 조정 필요'}</span>`:''}`:`문패 <b>${esc(V.code)}</b> · 집사가 시작하기를 기다리는 중`}</div>
-    <div class="brow">${H(btn('m-invite','📱 초대'))}${H(btn('m-settings','⚙️ 설정'))}${V.cfg.apply&&me?btn('m-apply',me.apply?'✅ 지원함':'🗡️ 자객 지원'):''}${H(`<button id="start" class="red" ${bad?'disabled':''}>호패 나눠주고 시작</button>`)}${isHost?'':btn('leave','나가기')}</div>`}
+    <div class="brow">${H(btn('m-invite','📱 초대'))}${H(btn('m-settings','📜 룰 선택'))}${V.cfg.apply&&me?btn('m-apply',me.apply?'✅ 지원함':'🗡️ 자객 지원'):''}${H(`<button id="start" class="red" ${bad?'disabled':''}>호패 나눠주고 시작</button>`)}${isHost?'':btn('leave','나가기')}</div>`}
   if(ph==='roles')return `<div class="btxt">${me?'옆사람 몰래 호패를 확인하세요':'호패를 나눠주었습니다'}</div><div class="brow">${me?btn('m-card','📜 내 호패 보기'):''}${H(btn('day','첫날 시작','red'))}</div>`;
   if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 한마디 소개부터!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}</div>`;
   if(ph==='vote'){const hb=H(btn('endvote','강제 개표'));
@@ -688,7 +688,7 @@ function modalHtml(){const c=V&&V.cfg;
     <div class="err">${esc(errMsg)}</div><button class="red" id="save-profile">${nextAct==='host'?'저장하고 고택 열기':nextAct==='practice'?'저장하고 연습 시작':nextAct==='join'?'저장하고 입장하기':'저장'}</button>`;
   case 'join':return `<h2>🚪 고택 입장</h2><label>고택 문패 (집사에게 받은 4자리 코드)</label><input id="cd" maxlength="4" style="text-transform:uppercase;letter-spacing:8px;font-size:26px;text-align:center" value="${esc(params.get('room')||'')}" placeholder="ABCD">
     <div class="muted" style="margin-top:8px">${esc(LS.get('mafia-name')||'')} (으)로 입장합니다</div><div class="err">${esc(errMsg)}</div><button class="red" id="jn">입장하기</button>`;
-  case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-settings','⚙️ 게임 설정')+btn('m-invite','📱 초대 (QR)')+btn('bots-add','🤖 컴퓨터 식구 채우기')+(V.players.some(p=>String(p.token).startsWith('bot-'))?btn('bots-del','🤖 컴퓨터 식구 내보내기'):''):''}${isHost&&V&&V.players.some(p=>String(p.token).startsWith('bot-'))?btn('m-test','🧪 테스트 장면 보기'):''}${!V?btn('go-practice','🤖 혼자 연습하기'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${V?btn('quit','🚪 고택 나가기'):''}</div>
+  case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${!V?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-settings','📜 룰 선택')+btn('m-invite','📱 초대 (QR)')+btn('bots-add','🤖 컴퓨터 식구 채우기')+(V.players.some(p=>String(p.token).startsWith('bot-'))?btn('bots-del','🤖 컴퓨터 식구 내보내기'):''):''}${isHost&&V&&V.players.some(p=>String(p.token).startsWith('bot-'))?btn('m-test','🧪 테스트 장면 보기'):''}${!V?btn('go-practice','🤖 혼자 연습하기'):''}${btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기')}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${btn('fs','⛶ 전체 화면')}${V?btn('quit','🚪 고택 나가기'):''}</div>
     <div class="muted" style="margin-top:12px">🤖 혼자 연습하기: 컴퓨터 식구 9명과 한 판을 돌려 화면을 미리 볼 수 있어요. 컴퓨터 식구는 지목과 밤 행동을 알아서 해요. 토론은 집사 버튼으로 바로 끝낼 수 있어요.<br>소리는 집사 폰에서 크게 틀어두는 걸 추천해요(배경음악은 집사 폰만 기본으로 켜져요).<br>폰을 가로로 돌리면 화면이 크게 보여요. 화면 회전이 잠겨 있으면 자동으로 눕혀서 보여드려요.</div>`;
   case 'rules':return `<h2>📜 놀이 방법</h2><div class="rules"><b>🎯 목표</b><br>🏮 종갓집: 숨어든 자객을 모두 관아로 송치하면 승리<br>🗡️ 자객패: 자객 수가 식구 수와 같아지면 승리<br><br>
     <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람은 관아로 송치되고 정체가 드러나요. 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 눈을 감고, 자객·암행어사·의원만 폰으로 몰래 움직여요.<br>6. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
@@ -699,7 +699,7 @@ function modalHtml(){const c=V&&V.cfg;
   case 'invite':{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');
     return `<h2>📱 식구 초대</h2><div class="center"><div class="muted">고택 문패</div><div class="code">${esc(V.code)}</div><div id="qr"></div><div class="muted" style="word-break:break-all">${esc(link)}</div>${btn('share','🔗 링크 공유/복사')}</div>`}
   case 'settings':{const n=V.players.length,mx=maxMafia(n,c.gap);const st=(k,v)=>`<div class="step"><button class="wood" data-c="${k}" data-d="-1">−</button><b>${v}</b><button class="wood" data-c="${k}" data-d="1">+</button></div>`;
-    return `<h2>⚙️ 게임 설정</h2>
+    return `<h2>📜 룰 선택</h2>
     <label>🗡️ 자객 수 (지금 인원으로 최대 ${mx}명)</label>${st('mafia',c.mafia+'명')}
     <div class="muted" style="margin-top:4px">💡 추천: <b>${recMafia(n)}</b> (총 인원의 20~30%)${inRec(n,c.mafia)?' · 지금 설정은 추천 범위예요':''}<br>종갓집 ${n-c.mafia}명 · 규칙: 종갓집이 자객보다 최소 ${c.gap}명 많아야 함</div>
     <label>종갓집-자객 최소 차이</label>${st('gap',c.gap+'명')}
