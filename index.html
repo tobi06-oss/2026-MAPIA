@@ -615,7 +615,7 @@ function spreadHtml(){
     <div class="sp-head">${esc(head.t)}</div><div class="sp-pic">${pic}</div><div class="sp-quip">${esc(q)}</div></div>
   <div class="sp-panel"><div class="sp-title">${esc(title)}</div><div class="sp-in">${body}</div>
     <div class="sp-status"><b>${esc(status)}</b><div>${esc(st2)}</div>${lw}</div>
-    <div class="sp-btns"><button class="wood" id="mclose">확인 / 관전 계속</button>${modal==='result'&&P?`<button class="wood" id="sp-tally">📊 지목 현황</button>`:''}${isHost?`<button class="red" id="sp-next">${V.phase==='result'?'다음으로':'사랑방으로 모이기'}</button>`:''}</div></div>`}
+    <div class="sp-btns">${isHost?'':'<button class="wood" id="mclose">닫기</button>'}${modal==='result'&&P?`<button class="wood" id="sp-tally">📊 지목 현황</button>`:''}${isHost?`<button class="red" id="sp-next">${V.phase==='result'?'다음으로':'사랑방으로 모이기'}</button>`:''}</div></div>`}
 function verdictHtml(){if(!V.cfg.apply)return'';const vs=V.roles.filter(p=>p.apply&&p.job==='mafia');const won=V.winner==='M';
   const others=V.roles.filter(p=>p.apply&&p.job!=='mafia');if(!vs.length&&!others.length)return'';
   return `<div class="sec-box center"><h3>${won?'🎁 기념품 수여식':'🪵 곤장 집행'}</h3>${vs.length?vs.map(p=>`<div style="font-size:19px;margin:4px 0"><b>${esc(p.name)}</b> ${won?'— 자객으로 승리! 🎁 기념품을 받으세요':`— 생존자들에게 곤장 ${V.cfg.gonjang}대! 엎드리시오 🪵`}</div>`).join(''):'<div class="muted">지원해서 자객이 된 사람은 없었습니다</div>'}
