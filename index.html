@@ -417,10 +417,10 @@ function hostCmd(c){ // 방장 화면 버튼
   if(c.k==='lobby'){g.phase='lobby';g.players.forEach(p=>{p.role=null;p.alive=true});g.winner=null}
   hostSave();broadcast();
 }
-const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_dolsoe:'img/gemini/j_dolsoe.jpg',j_jumo:'img/gemini/j_jumo.jpg',j_ijang:'img/gemini/j_ijang.jpg',j_ijang_F:'img/gemini/j_ijang_F.jpg',j_podo_F:'img/gemini/j_podo_F.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
+const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_dolsoe:'img/gemini/j_dolsoe.jpg',j_jumo:'img/gemini/j_jumo.jpg',j_ijang:'img/gemini/j_ijang.jpg',j_ijang_F:'img/gemini/j_ijang_F.jpg',j_podo_F:'img/gemini/j_podo_F.jpg',j_soldier:'img/gemini/j_soldier.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
 
 const FPOOL={M:['M0','M00','M000','M1','M2','M3','M4','M5','M6'],F:['F0','F1','F2','F3','F4','F5','F6']};
-const JART={mafia:'j_mafia',police:'j_podo',doctor:'j_ijang'};
+const JART={mafia:'j_mafia',police:'j_podo',doctor:'j_ijang',soldier:'j_soldier'};
 const SBART={'종부 마님':'img/sinbun/종부_마님.jpg','막내 아씨':'img/sinbun/막내_아씨.jpg','이웃집 할매':'img/sinbun/이웃집_할매.jpg','하산한 비구니':'img/sinbun/하산한_비구니.jpg','주막 주모':'img/sinbun/주막_주모.jpg','빨래터 아낙':'img/sinbun/빨래터_아낙.jpg','닭 치는 과부':'img/sinbun/닭_치는_과부.jpg','김매는 아낙':'img/sinbun/김매는_아낙.jpg','훈장님':'img/sinbun/훈장님.jpg','이장님':'img/sinbun/이장님.jpg','사랑채 할배':'img/sinbun/사랑채_할배.jpg','한량':'img/sinbun/한량.jpg','떠돌이 소리꾼':'img/sinbun/떠돌이_소리꾼.jpg','돌쇠':'img/sinbun/돌쇠.jpg','소작농':'img/sinbun/소작농.jpg','엿장수':'img/sinbun/엿장수.jpg','낙방한 선비':'img/sinbun/낙방한_선비.jpg'};
 const SBF=["종부 마님", "막내 아씨", "이웃집 할매", "하산한 비구니", "주막 주모", "빨래터 아낙", "닭 치는 과부", "김매는 아낙"],SBM=["훈장님", "이장님", "사랑채 할배", "한량", "떠돌이 소리꾼", "돌쇠", "소작농", "엿장수", "낙방한 선비"];
 function sbKey(f){return f&&f.n?f.n.split(' ').slice(1).join(' '):''}
