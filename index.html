@@ -56,6 +56,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .slot.gone{opacity:.75}.slot.gone .ava{filter:grayscale(1);opacity:.6}
 .slot.can{border-color:#f0b429;box-shadow:0 0 0 2px rgba(240,180,41,.6)}
 .slot.picked{background:rgba(150,40,25,.92);border-color:#ffcf6b;transform:scale(1.04)}
+.stk{position:absolute;right:-8px;top:-10px;display:flex;gap:2px;pointer-events:none;z-index:3}.stkr{display:flex;flex-direction:column;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d9483b,#8a1f1f);border:2px dashed #ffd98a;box-shadow:0 2px 4px rgba(0,0,0,.5);font-size:16px;line-height:1;transform:rotate(-12deg);opacity:.85}.stkr b{font-size:10px;color:#fff;margin-top:1px;white-space:nowrap}.stkr.done{opacity:1;border-style:solid}.stkr.pop{animation:stick .45s cubic-bezier(.3,1.6,.5,1)}@keyframes stick{0%{transform:scale(2.6) rotate(-40deg);opacity:0}60%{transform:scale(.85) rotate(-8deg);opacity:1}100%{transform:scale(1) rotate(-12deg)}}.qmk{font-size:11px;color:#ffd98a}
 .slot.mine{border-color:rgba(140,200,234,.7)}
 .sinfo{min-width:0;flex:1}.sname{font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sst{font-size:15px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .me{font-size:11px;background:#336b88;color:#fff;border-radius:3px;padding:0 4px}
@@ -437,6 +438,7 @@ function hostAct(tok,m){
   if(m.t==='apply'&&G.phase==='lobby')p.apply=!!m.on;
   if(m.t==='vote'&&G.phase==='vote'&&p.alive&&!(tok in G.votes)&&G.cands.includes(m.target)&&m.target!==tok){
     G.votes[tok]=m.target;if(aliveP().every(x=>x.token in G.votes))countVotes()}
+  if(m.t==='mhover'&&G.phase==='night'&&p.alive&&p.job==='mafia'){const N=G.night;N.mhover=N.mhover||{};if(G.players.some(x=>x.token===m.target&&x.alive))N.mhover[tok]=m.target;else delete N.mhover[tok]} // 동료에게 지금 고르는 중인 사람 알리기
   if(m.t==='night'&&G.phase==='night'&&p.alive){const tgt=G.players.find(x=>x.token===m.target);
     if(tgt&&tgt.alive){const N=G.night;
       if(p.job==='mafia'&&!(tok in N.mafia)&&tgt.role!=='M')N.mafia[tok]=m.target;
@@ -635,7 +637,8 @@ function viewFor(tok){
   if(g.phase==='result'){v.result={...g.result,votes:undefined,job:g.result.job&&(g.result.job==='mafia'?'mafia':'citizen'),flavor:g.result.job==='mafia'?g.result.flavor:null,tally:tally(g.result.votes,g.result.cands),deadName:g.result.dead&&pname(g.result.dead)}}
   if(g.phase==='night'&&p&&p.alive){const N=g.night;
     if(p.job==='mafia'){v.targets=aliveP().filter(x=>x.role!=='M').map(x=>x.token);v.myNight=N.mafia[tok];
-      v.mateNight=Object.entries(N.mafia).filter(([k])=>k!==tok).map(([k,t])=>`${pname(k)} → ${pname(t)}`)}
+      v.mateNight=Object.entries(N.mafia).filter(([k])=>k!==tok).map(([k,t])=>`${pname(k)} → ${pname(t)}`);
+      v.mateMarks=aliveP().filter(x=>x.job==='mafia'&&x.token!==tok).map(x=>{const d=N.mafia[x.token],h=(N.mhover||{})[x.token];return (d||h)?{m:x.token,n:x.name,t:d||h,done:!!d}:null}).filter(Boolean)}
     if(p.job==='police'){v.targets=aliveP().filter(x=>x!==p).map(x=>x.token);if(N.police)v.myNight=N.police.target,v.police=N.police.isM}
     if(p.job==='soldier'){v.targets=aliveP().map(x=>x.token);v.myNight=N.doctor}
     if(p.job==='police'&&N.police)v.polRes={t:N.police.target,isM:N.police.isM};
@@ -879,7 +882,7 @@ function cnote(a,b,c){return `<div class="bigres cnote dark"><div class="br-n">$
 function chatPanelHtml(){const c=(V.chat||[]).slice(-30);
   return `<div class="cpanel dark"><div class="cp-h">🤫 자객 밀담 <span>${V.myNight?`✅ ${esc(pn(V.myNight))} 선택함`:'노릴 사람을 누르면 동료에게 알리고 바로 골라요 · 표가 갈려 동점이면 아무도 못 해쳐요'}</span><button class="cp-x" id="cp-close">접기 ✕</button></div>
   <div class="cp-msgs" id="chatbox">${c.length?c.map(m=>`<div><b>${esc(m.from)}</b> ${esc(m.text)}</div>`).join(''):`<div class="muted2">${V.mates&&V.mates.length?'동료: '+V.mates.map(esc).join(', '):'혼자인 자객이오'}${V.mateNight.length?' · '+V.mateNight.map(esc).join(', '):''}</div>`}</div>
-  ${V.myNight?'':`<div class="qk"><span class="qt">🎯</span>${(V.targets||[]).map(t=>`<button class="qb qn ${voteSel===t?'on':''}" data-qt="${t}">${esc(pn(t))}</button>`).join('')}</div>`}
+  ${V.myNight?'':`<div class="qk"><span class="qt">🎯</span>${(V.targets||[]).map(t=>{const mk=(V.mateMarks||[]).filter(x=>x.t===t);return `<button class="qb qn ${voteSel===t?'on':''}" data-qt="${t}">${esc(pn(t))}${mk.length?` <span class="qmk">🗡️${mk.map(x=>esc(x.n.slice(0,2))).join(',')}</span>`:''}</button>`}).join('')}</div>`}
   <div class="cp-in"><input id="chatin" maxlength="120" placeholder="동료에게 속닥속닥" autocomplete="off"><button id="chatsend">전송</button></div></div>`}
 function centerHtml(){const ph=V.phase,me=V.me,al=me&&me.alive;
   if(ph==='result')return V.result?bigResHtml(V.result):'';
@@ -907,11 +910,15 @@ function bigResHtml(r){const [a,b,c]=r.dead?[`${esc(r.deadName)} 송치`,r.role=
 function selectable(){if(!V||!V.me||!V.me.alive)return[];
   if(V.phase==='vote'&&V.myVote===undefined)return V.cands.filter(t=>t!==V.me.token);
   if(V.phase==='night'&&V.targets&&!V.myNight)return V.targets;return[]}
-function slotsHtml(){const ps=V.players,n=ps.length,k=Math.ceil(n/2)||1;const h=Math.min(58,Math.floor((316-(k-1)*6)/k));const sel=selectable();
+let stuckSeen=new Set();
+function mHover(){if(V&&V.phase==='night'&&V.me&&V.me.alive&&V.me.job==='mafia'&&!V.myNight&&voteSel)act({t:'mhover',target:voteSel})}
+function stickers(t){const M=V.phase==='night'&&V.mateMarks||[];const L=M.filter(x=>x.t===t);if(!L.length)return '';
+  return `<div class="stk">${L.map(x=>{const k=x.m+'>'+x.t+(x.done?'!':'');const neu=!stuckSeen.has(k);stuckSeen.add(k);return `<span class="stkr ${x.done?'done':''} ${neu?'pop':''}" title="${esc(x.n)}">🗡️<b>${esc(x.n.slice(0,2))}${x.done?'✓':''}</b></span>`}).join('')}</div>`}
+function slotsHtml(){if(V.phase!=='night')stuckSeen.clear();const ps=V.players,n=ps.length,k=Math.ceil(n/2)||1;const h=Math.min(58,Math.floor((316-(k-1)*6)/k));const sel=selectable();
   const slot=(p,i)=>{const col=i<k?0:1,row=i<k?i:i-k;const x=col?830:22,y=148+row*(h+6);
     let st='';if(!p.alive)st=`💀 탈락${p.rev?' · '+esc(revShort(p.rev)):''}`;else if(V.phase==='lobby')st=p.online?'🟢 입장':'⚪ 연결 끊김';else if(V.phase==='vote')st=V.votedTokens&&V.votedTokens.includes(p.token)?'✋ 지목 완료':'… 고민 중';else if((V.phase==='defense'||V.phase==='judge')&&p.token===V.accused)st='⚖️ 변론대';else if(V.phase==='judge')st=V.jTokens.includes(p.token)?'✋ 투표 완료':'… 고민 중';else if(V.phase==='night')st='💤';else st=p.online?'생존':'⚪ 연결 끊김';
     const can=sel.includes(p.token);
-    return `<div class="slot dark ${p.alive?'':'gone'} ${can?'can':''} ${voteSel===p.token?'picked':''} ${p.token===(V.me&&V.me.token)?'mine':''}" data-slot="${p.token}" style="left:${x}px;top:${y}px;height:${h}px"><span class="ava ${p.gender==='F'?'f':'m'}" style="width:${h-12}px;height:${h-12}px">${faceImg(p)}</span><div class="sinfo"><div class="sname">${esc(p.name)}${p.token===(V.me&&V.me.token)?' <span class="me">나</span>':''}</div><div class="sst">${st}</div></div></div>`};
+    return `<div class="slot dark ${p.alive?'':'gone'} ${can?'can':''} ${voteSel===p.token?'picked':''} ${p.token===(V.me&&V.me.token)?'mine':''}" data-slot="${p.token}" style="left:${x}px;top:${y}px;height:${h}px"><span class="ava ${p.gender==='F'?'f':'m'}" style="width:${h-12}px;height:${h-12}px">${faceImg(p)}</span><div class="sinfo"><div class="sname">${esc(p.name)}${p.token===(V.me&&V.me.token)?' <span class="me">나</span>':''}</div><div class="sst">${st}</div></div>${stickers(p.token)}</div>`};
   return ps.map(slot).join('')}
 function btn(id,label,cls){return `<button id="${id}" class="${cls||'wood'}">${label}</button>`}
 let ghostSeen=0;
@@ -1031,7 +1038,7 @@ function bind(){
   on('#cornerR','click',()=>openM('menu'));
   on('#mclose','click',()=>{if(modal==='install')return $('#inst-skip').click();modal=null;errMsg='';draw()});on('#sp-tally','click',()=>openM('rtally'));on('#sp-next','click',()=>{modal=null;cmd('next')});on('#dim','click',()=>{modal=null;draw()});
   on('#m-rules','click',()=>openM('rules'));on('#m-dex','click',()=>openM('dex'));on('#m-settings','click',()=>openM('settings'));on('#m-invite','click',()=>openM('invite'));
-  on('#m-apply','click',()=>openM('apply'));on('#m-card','click',()=>openM('card'));on('#m-chat','click',()=>{if(V&&V.phase==='night'&&me_alive()){chatOpen=!chatOpen;draw()}else openM('chat')});on('#cp-close','click',()=>{chatOpen=false;draw()});$$('[data-qt]').forEach(b=>b.onclick=()=>{voteSel=b.dataset.qt;act({t:'chat',text:pickLine(voteSel)});draw()});on('#m-tally','click',()=>openM('tally'));
+  on('#m-apply','click',()=>openM('apply'));on('#m-card','click',()=>openM('card'));on('#m-chat','click',()=>{if(V&&V.phase==='night'&&me_alive()){chatOpen=!chatOpen;draw()}else openM('chat')});on('#cp-close','click',()=>{chatOpen=false;draw()});$$('[data-qt]').forEach(b=>b.onclick=()=>{voteSel=b.dataset.qt;act({t:'chat',text:pickLine(voteSel)});mHover();draw()});on('#m-tally','click',()=>openM('tally'));
   on('#m-result','click',()=>openM('result'));on('#m-morning','click',()=>openM('morning'));on('#m-end','click',()=>openM('end'));
   on('#snd-bgm','click',()=>{LS.set('snd-bgm',!sndPref('bgm'));audioUnlock();bgmForPhase();if(!V&&sndPref('bgm'))bgmSet('day');draw()});
   on('#snd-sfx','click',()=>{LS.set('snd-sfx',!sndPref('sfx'));if(sndPref('sfx'))sfx('moktak');draw()});
@@ -1064,7 +1071,7 @@ function bind(){
   const jv=async v=>{if(!V||V.phase!=='judge')return; // #jn은 입장 모달의 '입장하기' 버튼과 id가 겹침
     if(!await askBox({title:v==='y'?'⛓️ 송치 찬성':'🙏 송치 반대',msg:`${V.accName}님 송치에 ${v==='y'?'찬성':'반대'}하시겠소?`,sub:'한 번 찍은 도장은 되돌릴 수 없소.',ok:'도장 찍기',no:'다시 생각하기'}))return;if(V.phase==='judge')act({t:'jv',v});sfx('stamp')};on('#jy','click',()=>jv('y'));on('#jn','click',()=>jv('n'));
   on('#share','click',()=>{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');if(navigator.share)navigator.share({title:'종갓집 자객 소동',text:'고택 문패 '+V.code,url:link}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(link).then(()=>alertBox('초대 링크를 복사했소. 단톡방에 붙여 넣으시오.','초대장'))});
-  $$('[data-slot]').forEach(b=>b.onclick=()=>{const t=b.dataset.slot;if(selectable().includes(t)){voteSel=t;return draw()}openM('player',t)});
+  $$('[data-slot]').forEach(b=>b.onclick=()=>{const t=b.dataset.slot;if(selectable().includes(t)){voteSel=t;mHover();return draw()}openM('player',t)});
   on('#sub','click',async()=>{if(!voteSel)return;const tp=V.players.find(p=>p.token===voteSel);if(!await askBox({title:'멍석말이 지목',face:tp?faceImg(tp):'',msg:`${pn(voteSel)}님을 지목하시겠소?`,sub:'한 번 찍은 도장은 되돌릴 수 없소.',ok:'도장 찍기',no:'다시 생각하기'}))return;if(!voteSel)return;act({t:'vote',target:voteSel});sfx('stamp');voteSel=null});
   const sendGhost=()=>{const i=$('#ghostin');if(i&&i.value.trim()){const t=i.value;i.value='';act({t:'ghost',text:t})}};on('#ghostsend','click',sendGhost);on('#ghostin','keydown',e=>{if(e.key==='Enter'&&!e.isComposing)sendGhost()});on('#m-ghost','click',()=>openM('ghost'));on('#m-record','click',()=>openM('record'));on('#rec-clear','click',async()=>{if(await askBox({title:'🧹 전적 지우기',msg:'지금까지 쌓인 전적을 모두 지우시겠소?',sub:'지우면 되돌릴 수 없소.',ok:'지우기',no:'그만두기'})){cmd('recclear');openM('record')}});
   const sendChat=()=>{const i=$('#chatin');if(i&&i.value.trim()){const t=i.value;i.value='';act({t:'chat',text:t})}};on('#chatsend','click',sendChat);$$('[data-q]').forEach(b=>b.onclick=()=>act({t:'chat',text:b.dataset.q}));on('#chatin','keydown',e=>{if(e.key==='Enter')sendChat()});
