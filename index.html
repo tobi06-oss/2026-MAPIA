@@ -180,7 +180,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .hw{display:inline-flex;flex-direction:column;align-items:center;gap:2px}.hw .hb{display:flex;gap:8px}.hw small{font-size:10.5px;line-height:1;color:#e9dcc0;opacity:.8;letter-spacing:.5px}
 .sp-btns .hw small{color:#6b5232}
 .brow:has(.hw),.sp-btns:has(.hw){align-items:flex-start}
-.cuffimg{display:block;width:72px;height:40px;object-fit:contain;margin:2px auto 4px}.cuffi{height:1.5em;vertical-align:-.4em;margin-left:2px}
+.cuffimg{display:block;width:72px;height:40px;object-fit:contain;margin:2px auto 4px}.cuffi{height:1.6em;vertical-align:-.45em;margin-left:3px}.warn:has(.cuffi){white-space:nowrap;font-size:14px;letter-spacing:-.3px;padding-right:6px}.modal.mshort{height:auto;max-height:500px}
 </style>
 
 </head>
@@ -521,7 +521,7 @@ function draw(){
   const ms=$('.mbody'),mscroll=ms?ms.scrollTop:0;
   const night=!!(V&&V.phase==='night');
   $('#stage').className=night?'night':'';
-  $('#stage').innerHTML=stageHtml();$('#mroot').innerHTML=modal&&SPREAD[modal]&&V&&spreadHtml()?`<div class="dim" id="dim"></div>${spreadHtml()}`:modal?`<div class="dim" id="dim"></div><div class="modal paper ${modal==='end'?'endf':''}">${modal==='end'?`<img class="dk fl" src="${G2.d_flor}"><img class="dk fr" src="${G2.d_flor}"><img class="dk jars" src="${G2.d_jars}"><img class="dk books" src="${G2.d_books}">`:''}<button class="mclose" id="mclose">✕</button><div class="mbody">${modalHtml()}</div></div>`:'';bind();
+  $('#stage').innerHTML=stageHtml();$('#mroot').innerHTML=modal&&SPREAD[modal]&&V&&spreadHtml()?`<div class="dim" id="dim"></div>${spreadHtml()}`:modal?`<div class="dim" id="dim"></div><div class="modal paper ${modal==='end'?'endf':''} ${modal==='apply'?'mshort':''}">${modal==='end'?`<img class="dk fl" src="${G2.d_flor}"><img class="dk fr" src="${G2.d_flor}"><img class="dk jars" src="${G2.d_jars}"><img class="dk books" src="${G2.d_books}">`:''}<button class="mclose" id="mclose">✕</button><div class="mbody">${modalHtml()}</div></div>`:'';bind();
   const ci2=$('#chatin');if(ci2){ci2.value=cv;if(cf)ci2.focus()}const cb=$('#chatbox');if(cb)cb.scrollTop=cb.scrollHeight;
   const ms2=$('.mbody');if(ms2&&modal===lastModal)ms2.scrollTop=mscroll;lastModal=modal;
   const lg=$('#logbox');if(lg)lg.scrollTop=lg.scrollHeight;
@@ -545,7 +545,7 @@ function revealHtml(job,f){const J=JOBS[job]||JOBS.citizen;
   return `<div class="reveal">정체는 ${J.emo} <b>${J.name}</b>였습니다</div>`}
 function revShort(r){if(!r)return'';const J=JOBS[r.job]||JOBS.citizen;return r.job==='citizen'&&r.flavor?r.flavor.n:J.emo+' '+J.name}
 function applyCardHtml(){const on=V.me&&V.me.apply,c=V.cfg;
-  return `<div class="notice"><div>📜 자객에 지원하면 뽑힐 확률이 소폭 올라가요.</div><div>🤫 누가 지원했는지는 아무도 모릅니다.</div><div>🎁 지원해서 자객이 되어 승리하면 <b>기념품</b>을 드려요.</div><div class="warn">⚠️ 단, 지원해서 뽑힌 자객이 게임에서 지면, 중대한 책임을 물어 <b>30분간 포박</b>됩니다. <img class="cuffi" src="img/cuffs.svg" alt="수갑"></div></div>
+  return `<div class="notice"><div>📜 자객에 지원하면 뽑힐 확률이 소폭 올라가요.</div><div>🤫 누가 지원했는지는 아무도 모릅니다.</div><div>🎁 지원해서 자객이 되어 승리하면 <b>기념품</b>을 드려요.</div><div class="warn">⚠️ 단, 지원해서 뽑힌 자객이 게임에서 지면, 중대한 책임을 물어 <b>30분간 포박</b>됩니다. <img class="cuffi" src="img/cuffs.png" alt="수갑"></div></div>
   <button id="apply" class="${on?'red':'wood'}">${on?'✅ 지원했습니다 (누르면 취소)':'🗡️ 몰래 지원하기'}</button>`}
 const ENDINGS={
  m_fool:{t:'헛똑똑이 이장과 훈장, 고택을 말아먹다!',s:'잡으라는 자객은 놓치고 애먼 식구만 멍석말이…',e:'🤦'},
@@ -569,7 +569,7 @@ function photoCardHtml(){const E=endInfo(),m=V.winner==='M';
   <div class="efoot"><span>🗡️ 자객: ${E.ms.map(esc).join(', ')}</span><span>${PC_DATE}</span></div><div class="eseal" ${E.key==='m_perfect'?'style="display:none"':''}>${m?'賊':'勝'}</div></div>
   ${pobakHtml(E)}<div class="center"><button class="wood" id="savecard">📸 사진으로 저장</button></div>`}
 function pobakHtml(E){const ms=V.cfg.apply?V.roles.filter(p=>p.apply&&p.job==='mafia').map(p=>p.name):[];if(V.winner==='M'||!ms.length)return'';const k='pb_'+V.code+'_'+ms.join();let t0=Date.now();try{const v=+localStorage.getItem(k);if(v)t0=v;else localStorage.setItem(k,t0)}catch(e){}window._pbT0=t0;
-  return `<div class="pobak"><div class="pb-h">포 박 령</div><div class="pb-m"><b>${esc(V.pobak||'어설픈')}</b> 자객들. 임무에 실패한 대가로 <b>30분간 포박</b>한다.</div><img class="cuffimg" src="img/cuffs.svg" alt="수갑"><div class="pb-n">${ms.map(n=>`<span>${esc(n)}</span>`).join('')}</div><div class="pb-t" id="pbtm">30:00</div></div>`}
+  return `<div class="pobak"><div class="pb-h">포 박 령</div><div class="pb-m"><b>${esc(V.pobak||'어설픈')}</b> 자객들. 임무에 실패한 대가로 <b>30분간 포박</b>한다.</div><img class="cuffimg" src="img/cuffs.png" alt="수갑"><div class="pb-n">${ms.map(n=>`<span>${esc(n)}</span>`).join('')}</div><div class="pb-t" id="pbtm">30:00</div></div>`}
 setInterval(()=>{const el=document.getElementById('pbtm');if(!el||!window._pbT0)return;const s=Math.max(0,1800-Math.floor((Date.now()-window._pbT0)/1000));el.textContent=s?`남은 포박 ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`:'포박을 풀어주시오!';el.classList.toggle('done',!s)},1000);
 function loadImg(src){return new Promise(r=>{if(!src)return r(null);const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
 function wrapText(c,t,x,y,w,lh){const out=[];let line='';for(const wd of t.split(' ')){const tr=line?line+' '+wd:wd;if(c.measureText(tr).width>w&&line){out.push(line);line=wd}else line=tr}out.push(line);out.forEach((l,i)=>c.fillText(l,x,y+i*lh));return out.length}
