@@ -485,14 +485,14 @@ function hostCmd(c){ // 방장 화면 버튼
     g.players.filter(p=>p.job==='citizen').forEach(p=>p.flavor=draw1(p.gender,false));
     const held=new Set(used);
     g.players.filter(p=>p.job==='mafia').forEach(p=>{p.flavor=draw1(p.gender,false);const pool=p.gender==='F'?SINBUN.F:p.gender==='M'?SINBUN.M:SINBUN.F.concat(SINBUN.M);p.covers=pool.filter(x=>!held.has(x[0])).map(x=>x[0])});
-    g.round=0;g.outN=0;g.gid=rid(6);g.players.forEach(x=>{delete x.out});g.log=[];g.chat=[];g.ghost=[];g.winner=null;g.ending=null;g.stats={wrong:0,caught:0,mafia0:g.players.filter(x=>x.role==='M').length,pol:{},save:{},pick:{}};g.gameNo=(g.record||[]).length+1;g.phase='roles';}
+    g.round=0;g.outN=0;g.gid=rid(6);g.players.forEach(x=>{delete x.out});g.log=[];g.chat=[];g.ghost=[];g.daySus=null;g.winner=null;g.ending=null;g.stats={wrong:0,caught:0,mafia0:g.players.filter(x=>x.role==='M').length,pol:{},save:{},pick:{}};g.gameNo=(g.record||[]).length+1;g.phase='roles';}
   if(c.k==='day')startDay();
   if(c.k==='vote')startVote(false);
   if(c.k==='plus'&&g.phase==='day')g.endAt+=60000;
   if(c.k==='endvote'&&g.phase==='vote')countVotes();
   if(c.k==='next'){
     if(g.phase==='result'){if(g.result.revote)startVote(true);else{const w=checkWin();if(w)endGame(w);else if(g.cfg.night)startNight();else startDay()}}
-    else if(g.phase==='morning'){const w=checkWin();if(w)endGame(w);else startDay()}
+    else if(g.phase==='morning'){const w=checkWin();if(w)endGame(w);else{g.daySus=g.result.sus||null;startDay()}} // 낮에도 지난밤 쪽지 다시 보기
   }
   if(c.k==='endnight'&&g.phase==='night')resolveNight();
   if(c.k==='out'&&!['lobby','end'].includes(g.phase)){const p=g.players.find(p=>p.token===c.v);if(p&&p.alive){const ph0=g.phase;
@@ -599,7 +599,7 @@ function judgeVoters(){return aliveP().filter(p=>p.token!==G.accused)}
 function resolveJudge(){const r=G.first,p=G.players.find(x=>x.token===G.accused),vs=Object.values(G.jv),y=vs.filter(v=>v==='y').length,n=vs.length-y;r.jy=y;r.jn=n;
   if(y>n){sendOff(p,r);r.noLW=true}else{r.spared=p.token;r.head={t:pick([`"살려주시오!" 눈물의 변론, ${p.name} 멍석에서 풀려나`,`찬반 투표 뒤집혔다! ${p.name}, 관아 문턱에서 귀가`,`${p.name}의 명변론에 사랑방 숙연… 송치 부결`])};G.log.push(`${G.round}일째 공론: ${p.name} 찬반 투표로 방면 (찬성 ${y} · 반대 ${n})`)}
   G.result=r;G.phase='result';G.accused=null}
-function startNight(){G.phase='night';G.night={mafia:{},police:null,doctor:null,sus:{}}}
+function startNight(){G.phase='night';G.daySus=null;G.night={mafia:{},police:null,doctor:null,sus:{}}}
 function nightActors(){return aliveP()} // 식구도 모두 폰으로 '수상한 사람 찍기' → 폰 만지는 기척으로 자객을 알 수 없게
 function nightLeft(){const N=G.night;N.sus=N.sus||{};return nightActors().filter(p=>p.job==='mafia'?!(p.token in N.mafia):p.job==='police'&&!N.police||p.job==='soldier'&&!N.doctor||!(p.token in N.sus)).length}
 function resolveNight(){
@@ -650,6 +650,7 @@ function viewFor(tok){
   if(g.phase==='result'&&g.result.spared)v.result.sparedName=pname(g.result.spared);
   if(g.phase==='defense'||g.phase==='judge'){v.accused=g.accused;v.accName=pname(g.accused);v.firstTally=tally(g.first.votes,g.first.cands)}
   if(g.phase==='judge'){v.jvoted=Object.keys(g.jv).length;v.jneed=judgeVoters().length;v.myJ=g.jv[tok];v.jTokens=Object.keys(g.jv)}
+  if(g.phase==='day'&&g.daySus)v.sus=g.daySus;
   if(g.phase==='morning'){v.nightDead=g.result.nightDead&&pname(g.result.nightDead);v.nightTok=g.result.nightDead;v.news=g.result.news;v.head=g.result.head;v.deadJob=g.result.job&&'citizen';v.deadFlavor=null;v.sus=g.result.sus||null}
   if(g.phase==='end'){v.winner=g.winner;v.ending=g.ending||(g.winner==='M'?'m_fool':'c_win');v.pobak=g.pobak||'';v.stats=g.stats||null;v.mvp=g.mvp||[];v.roles=g.players.map(x=>({name:x.name,role:x.role,job:x.job,flavor:x.flavor,alive:x.alive,apply:!!x.apply,gender:x.gender,out:x.out||null}));}
   return v;
@@ -937,7 +938,7 @@ function bottomBox(){
     return `<div class="btxt">${isHost?`식구 ${n}/${c.total||n}명 입장 · 문패 <b>${esc(V.code)}</b>${bad?` <span class="err">${n<3?'최소 3명':'자객 수 조정 필요'}</span>`:''}`:`문패 <b>${esc(V.code)}</b> · 집사가 시작하기를 기다리는 중`}</div>
     <div class="brow">${H(btn('m-invite','📱 초대'))}${H(btn('m-settings','📜 룰 선택'))}${applyOn(V.cfg)&&me?btn('m-apply',me.apply?'✅ 지원함':'🗡️ 자객 지원'):''}${H(`<button id="start" class="red" ${bad?'disabled':''}>호패 나눠주고 시작</button>`)}${isHost?'':btn('leave','나가기')}</div>`}
   if(ph==='roles')return `<div class="btxt">${me?'옆사람 몰래 호패를 확인하세요':'호패를 나눠주었습니다'}</div><div class="brow">${me?btn('m-card','📜 내 호패 보기'):''}${H(btn('day','첫날 시작','red'))}</div>`;
-  if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 한마디 소개부터!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}</div>`;
+  if(ph==='day')return `<div class="btxt">☀️ 오시(午時) · 사랑방 공론 중${V.round===1?' · 돌아가며 이름과 한마디 소개부터!':''}</div><div class="brow">${H(btn('vote','지목 시작','red')+btn('plus','+1분'))}${btn('m-card','📜 내 호패')}${V.sus&&V.sus.notes&&V.sus.notes.length?btn('m-notes','🕯️ 지난밤 쪽지'):''}</div>`;
   if(ph==='vote'){const hb=H(btn('endvote','강제 개표'));
     if(!me||!me.alive)return `<div class="btxt">${me?'💀 탈락자는 지목할 수 없소':''} 지목 진행 중 (${V.voted}/${V.voters})</div><div class="brow">${hb}</div>`;
     if(V.myVote!==undefined)return `<div class="btxt">✅ ${esc(pn(V.myVote))}님을 지목했소 (되돌릴 수 없음)</div><div class="brow">${btn('m-tally','📊 지목 현황')}${hb}</div>`;
