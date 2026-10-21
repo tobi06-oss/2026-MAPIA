@@ -367,7 +367,7 @@ function faceIdx(p){const ps=(V&&V.players)||[];const same=ps.filter(x=>(x.gende
 function faceSrc(p){if(p.rev){const r=idSrc(p.rev.job,p.rev.flavor,p.gender);if(r&&p.rev.job!=='mafia')return r}const ps=(V&&V.players)||[],k=ps.findIndex(x=>x.token===p.token);return avatarSvg(p.gender==='F'?'F':'M',k<0?0:k)}
 function faceImg(p,cls){return `<img class="face ${cls||''}" src="${faceSrc(p)}" alt="">`}
 /* ---- 호외(탈락 순간 익살 헤드라인) ---- */
-const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_perfect:'img/hoe/c_perfect.jpg',c_amhaeng:'img/hoe/c_amhaeng.jpg',h_caught:'img/hoe/h_caught.jpg',h_none:'img/hoe/h_none.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
+const ART={c_fast:'img/hoe/c_fast.jpg',c_win:'img/hoe/c_win.jpg',h_dolsoe:'img/hoe/h_dolsoe.jpg',h_night:'img/hoe/h_night.jpg',h_police:'img/hoe/h_police.jpg',h_saved:'img/hoe/h_saved.jpg',h_wrong:'img/hoe/h_wrong.jpg',m_last:'img/hoe/m_last.jpg',m_fool:'img/hoe/m_fool.jpg',c_perfect:'img/hoe/c_perfect.jpg',c_amhaeng:'img/hoe/c_amhaeng.jpg',h_caught:'img/hoe/h_caught.jpg',h_none:'img/hoe/h_none.jpg',h_soldier:'img/hoe/h_soldier.jpg',c_pyrrhic:'img/hoe/c_pyrrhic.jpg',m_wrong:'img/hoe/m_wrong.jpg'};
 
 const HOE={
  caught:['멍석말이 대성공! 자객 {n}, 관아로 직행','{n}의 가면이 벗겨지다! 고택 식구들 덩실덩실','눈치 백단 종갓집, 자객 {n}을 콕 집어내다','어설픈 연기 들통! {n}, 끌려가며 "억울하오" 연발','자객 {n}, 숨긴 단검이 소맷자락에서 툭!'],
@@ -399,7 +399,7 @@ function addBots(target){let i=0;while(G.players.length<target&&i<BOTS.length){c
   if(G.players.length>=6)G.cfg.mafia=Math.min(Math.max(1,maxMafia(G.players.length,G.cfg.gap)),Math.max(1,Math.round(G.players.length*.2)));hostSave();broadcast()}
 function removeBots(){G.players=G.players.filter(p=>!isBot(p));hostSave();broadcast()}
 /* ---- 테스트 장면 (연습판 전용) ---- */
-const SCENES=[['caught','⛓️ 자객 포박'],['wrong','😢 억울한 송치'],['wrongPolice','📜 어사 송치'],['tie','🤝 동점'],['night','💀 밤 습격'],['nightDoctor','🌿 의원 피습'],['saved','💉 의원이 살림'],['none','🌙 조용한 밤'],
+const SCENES=[['caught','⛓️ 자객 포박'],['wrong','😢 억울한 송치'],['wrongPolice','📜 어사 송치'],['tie','🤝 동점'],['night','💀 밤 습격'],['nightDoctor','🌿 의원 피습'],['saved','💉 의원이 살림'],['none','🌙 조용한 밤'],['soldier','🛡️ 호위무사가 막음'],
  ['m_fool','🗡️ 헛똑똑이 결말'],['m_wrong','🗡️ 멍석만 닳았다'],['m_perfect','🗡️ 무혈입성'],['m_last','🗡️ 홀로 남은 자객'],['c_win','🏮 종갓집 만세'],['c_fast','🏮 번갯불 콩'],['c_perfect','🏮 족집게'],['c_amhaeng','🏮 어사 출두'],['c_pyrrhic','🏮 막걸리 한 사발']];
 function testScene(k){const g=G;if(!g.players.some(p=>p.job)){g.players.forEach(p=>{p.alive=true});hostCmd({k:'start'})}
   g.players.forEach(p=>p.alive=true);if(!g.round)g.round=1;g.stats=g.stats||{wrong:0,caught:0,mafia0:g.players.filter(p=>p.role==='M').length};
@@ -413,7 +413,7 @@ function testScene(k){const g=G;if(!g.players.some(p=>p.job)){g.players.forEach(
     if(k==='tie'){r.noone=true;r.head=hoe('tie')}else{v.alive=false;Object.assign(r,{dead:v.token,role:v.role,job:v.job,flavor:v.flavor,head:k==='caught'?hoeVote(v):k==='wrongPolice'?hoe('wrongPolice',v):hoe('wrong',v)});g.endAt=Date.now()+g.cfg.lastWords*1000}
     g.result=r;g.phase='result'}
   else{const v=k==='nightDoctor'?dc:ct;let dead=null,news,head;
-    if(k==='saved'){news=pick(NEWS_SAVED);head=hoe('saved')}else if(k==='none'){news=pick(NEWS_NONE);head=hoe('none')}
+    if(k==='saved'){news=pick(NEWS_SAVED);head=hoe('saved')}else if(k==='none'){news=pick(NEWS_NONE);head=hoe('none')}else if(k==='soldier'){const sd=g.players.find(p=>p.role!=='M')||g.players[0];news=pick(NEWS_SOLDIER).replace('{n}',sd.name);head=hoe('soldier',sd)}
     else{v.alive=false;dead=v.token;news=pick(NEWS_DEAD).replace('{n}',v.name);head=hoeNight(v)}
     g.result={nightDead:dead,news,head,job:dead&&v.job,flavor:dead&&v.flavor};g.phase='morning'}
   hostSave();broadcast();modal={result:'result',morning:'morning',end:'end'}[g.phase]||null;draw()}
@@ -608,7 +608,7 @@ function spreadHtml(){
     status=tok?'[상태: 억울한 원귀]':kind==='saved'?'[상태: 모두 무사]':kind==='soldier'?'[상태: 습격 격퇴]':'[상태: 고요한 밤]';st2=tok?'다른 식구들의 복수를 지켜보며 응원하시오':news}
   if(typeof head==='string')head={t:head};head=head||{t:''};
   const emo={caught:'⛓️',wrong:'😢',night:'💀',saved:'🌿',soldier:'🛡️',none:'🌙',tie:'🤝'}[kind];
-  const fbArt={none:'h_none',caught:'h_caught',wrong:'h_wrong',night:'h_night',saved:'h_saved'}[kind],ak=head.a&&ART[head.a]?head.a:(job==='police'&&kind==='wrong'?'h_police':fbArt);
+  const fbArt={soldier:'h_soldier',none:'h_none',caught:'h_caught',wrong:'h_wrong',night:'h_night',saved:'h_saved'}[kind],ak=head.a&&ART[head.a]?head.a:(job==='police'&&kind==='wrong'?'h_police':fbArt);
   const pic=ak&&ART[ak]?`<img src="${ART[ak]}" alt="">`:`<div class="efb" style="background-image:url('${stageBg()}')"></div>`;
   const q=QUIP[kind][hsh(head.t)%QUIP[kind].length];
   const P=tok&&V.players.find(p=>p.token===tok);const J=JOBS[job]||JOBS.citizen;
@@ -737,7 +737,7 @@ function modalHtml(){const c=V&&V.cfg;
     return `<div class="center">${faceImg(p,'big')}</div><h2 class="center">${esc(p.name)}</h2>${p.intro?`<div style="font-size:20px;margin:10px 0">“${esc(p.intro)}”</div>`:'<div class="muted">한마디 소개가 없어요</div>'}${!p.alive&&p.rev?revealHtml(p.rev.job,p.rev.flavor):''}${isHost&&V.phase==='lobby'&&p.token!==myToken?btn('kick','내보내기'):''}`}
   case 'card':return V.me&&V.me.role?`<div class="center" id="rolecard"><div class="muted">${esc(V.me.name)}님의 호패 · <b>누르고 있는 동안만</b> 보여요</div>${jobCard(V.me,peekRole)}${V.me.alive?'':'<div class="muted" style="margin-top:8px">💀 탈락했습니다 (관전만, 말하면 안 돼요!)</div>'}</div>`:'';
   case 'rtally':return V.result?`<h2>📊 ${V.round}일째 지목 현황</h2>${tallyHtml(V.result.tally,true)}`:'';
-  case 'test':{const hb=V.players.some(p=>String(p.token).startsWith('bot-'));return `<h2>🧪 테스트 모드</h2><div class="muted">집사에게만 보여요. 컴퓨터 식구로 빈자리를 채워 혼자 돌려볼 수 있어요.</div>${V.phase==='lobby'?`<div class="mgrid">${btn('bots-add','🤖 컴퓨터 식구 채우기')}${hb?btn('bots-del','🤖 컴퓨터 식구 내보내기'):''}</div>`:''}${hb?`<h3>장면 바로 보기</h3><div class="muted">누르면 그 장면으로 바로 넘어갑니다.</div><h3>게임 중</h3><div class="mgrid">${SCENES.slice(0,8).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><h3>결말</h3><div class="mgrid">${SCENES.slice(8).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><button class="red" id="test-lobby" style="margin-top:14px">↩️ 대기실로 돌아가기</button>`:''}`}
+  case 'test':{const hb=V.players.some(p=>String(p.token).startsWith('bot-'));return `<h2>🧪 테스트 모드</h2><div class="muted">집사에게만 보여요. 컴퓨터 식구로 빈자리를 채워 혼자 돌려볼 수 있어요.</div>${V.phase==='lobby'?`<div class="mgrid">${btn('bots-add','🤖 컴퓨터 식구 채우기')}${hb?btn('bots-del','🤖 컴퓨터 식구 내보내기'):''}</div>`:''}${hb?`<h3>장면 바로 보기</h3><div class="muted">누르면 그 장면으로 바로 넘어갑니다.</div><h3>게임 중</h3><div class="mgrid">${SCENES.slice(0,9).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><h3>결말</h3><div class="mgrid">${SCENES.slice(9).map(([k,l])=>`<button class="wood" data-scene="${k}">${l}</button>`).join('')}</div><button class="red" id="test-lobby" style="margin-top:14px">↩️ 대기실로 돌아가기</button>`:''}`}
   case 'chat':return `<h2>🤫 자객들의 밀담</h2>${chatHtml()}`;
   case 'tally':return `<h2>📊 지목 현황</h2>${V.tally?tallyHtml(V.tally):'<div class="muted">지목을 마쳐야 볼 수 있소</div>'}`;
   case 'result':{const r=V.result;if(!r)return '';
