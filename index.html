@@ -314,7 +314,6 @@ F:[['👘 종부 마님','종가 안살림을 40년째 쥐고 있는 실세. 곳
 ['🌾 김매는 아낙','논두렁에서 고택 담장 너머를 매일 훔쳐본다.',1]],
 M:[['📚 훈장님','회초리보다 잔소리가 더 아프다. 에헴, 다 보이느니라.'],
 ['📜 이장님','마을 일이라면 모르는 게 없다고 큰소리치는데, 정작 아는 건 별로 없다.'],
-['👴 사랑채 할배','종가 어르신. 낮잠 자는 척하며 다 들었다.'],
 ['🍶 한량','술값은 늘 외상, 입담은 늘 현찰.'],
 ['🖌️ 낙방한 선비','과거에 일곱 번 떨어지고 여덟 번째 준비 중.'],
 ['🎶 떠돌이 소리꾼','장구 하나 메고 와서 고택에 눌러앉았다.',1],
@@ -417,12 +416,12 @@ function hostCmd(c){ // 방장 화면 버튼
   if(c.k==='lobby'){g.phase='lobby';g.players.forEach(p=>{p.role=null;p.alive=true});g.winner=null}
   hostSave();broadcast();
 }
-const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_dolsoe:'img/gemini/j_dolsoe.jpg',j_jumo:'img/gemini/j_jumo.jpg',j_ijang:'img/gemini/j_ijang.jpg',j_ijang_F:'img/gemini/j_ijang_F.jpg',j_podo_F:'img/gemini/j_podo_F.jpg',j_soldier:'img/gemini/j_soldier.jpg',j_soldier_F:'img/gemini/j_soldier_F.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
+const G2={j_mafia:'img/gemini/j_mafia.jpg',j_podo:'img/gemini/j_podo.jpg',j_ijang:'img/gemini/j_ijang.jpg',j_ijang_F:'img/gemini/j_ijang_F.jpg',j_podo_F:'img/gemini/j_podo_F.jpg',j_soldier:'img/gemini/j_soldier.jpg',j_soldier_F:'img/gemini/j_soldier_F.jpg',e_perfect:'img/gemini/e_perfect.jpg',d_tasL:'img/gemini/d_tasL.jpg',d_tasR:'img/gemini/d_tasR.jpg',d_jars:'img/gemini/d_jars.jpg',d_books:'img/gemini/d_books.jpg',d_flor:'img/gemini/d_flor.jpg'};
 
 const FPOOL={M:['M0','M00','M000','M1','M2','M3','M4','M5','M6'],F:['F0','F1','F2','F3','F4','F5','F6']};
 const JART={mafia:'j_mafia',police:'j_podo',doctor:'j_ijang',soldier:'j_soldier'};
-const SBART={'종부 마님':'img/sinbun/종부_마님.jpg','막내 아씨':'img/sinbun/막내_아씨.jpg','이웃집 할매':'img/sinbun/이웃집_할매.jpg','하산한 비구니':'img/sinbun/하산한_비구니.jpg','주막 주모':'img/sinbun/주막_주모.jpg','빨래터 아낙':'img/sinbun/빨래터_아낙.jpg','닭 치는 과부':'img/sinbun/닭_치는_과부.jpg','김매는 아낙':'img/sinbun/김매는_아낙.jpg','훈장님':'img/sinbun/훈장님.jpg','이장님':'img/sinbun/이장님.jpg','사랑채 할배':'img/sinbun/사랑채_할배.jpg','한량':'img/sinbun/한량.jpg','떠돌이 소리꾼':'img/sinbun/떠돌이_소리꾼.jpg','돌쇠':'img/sinbun/돌쇠.jpg','소작농':'img/sinbun/소작농.jpg','엿장수':'img/sinbun/엿장수.jpg','낙방한 선비':'img/sinbun/낙방한_선비.jpg'};
-const SBF=["종부 마님", "막내 아씨", "이웃집 할매", "하산한 비구니", "주막 주모", "빨래터 아낙", "닭 치는 과부", "김매는 아낙"],SBM=["훈장님", "이장님", "사랑채 할배", "한량", "떠돌이 소리꾼", "돌쇠", "소작농", "엿장수", "낙방한 선비"];
+const SBART={'종부 마님':'img/sinbun/종부_마님.jpg','막내 아씨':'img/sinbun/막내_아씨.jpg','이웃집 할매':'img/sinbun/이웃집_할매.jpg','하산한 비구니':'img/sinbun/하산한_비구니.jpg','주막 주모':'img/sinbun/주막_주모.jpg','빨래터 아낙':'img/sinbun/빨래터_아낙.jpg','닭 치는 과부':'img/sinbun/닭_치는_과부.jpg','김매는 아낙':'img/sinbun/김매는_아낙.jpg','훈장님':'img/sinbun/훈장님.jpg','이장님':'img/sinbun/이장님.jpg','한량':'img/sinbun/한량.jpg','떠돌이 소리꾼':'img/sinbun/떠돌이_소리꾼.jpg','돌쇠':'img/sinbun/돌쇠.jpg','소작농':'img/sinbun/소작농.jpg','엿장수':'img/sinbun/엿장수.jpg','낙방한 선비':'img/sinbun/낙방한_선비.jpg'};
+const SBF=["종부 마님", "막내 아씨", "이웃집 할매", "하산한 비구니", "주막 주모", "빨래터 아낙", "닭 치는 과부", "김매는 아낙"],SBM=["훈장님", "이장님", "한량", "떠돌이 소리꾼", "돌쇠", "소작농", "엿장수", "낙방한 선비"];
 function sbKey(f){return f&&f.n?f.n.split(' ').slice(1).join(' '):''}
 function idSrc(job,f,g){if(job==='mafia')return G2.j_mafia;if(job==='doctor'&&g==='F')return G2.j_ijang_F;if(job==='police'&&g==='F')return G2.j_podo_F;if(job==='soldier'&&g==='F')return G2.j_soldier_F;if(job==='citizen'&&f&&SBART[sbKey(f)])return SBART[sbKey(f)];const k=JART[job];return k?G2[k]:null}
 /* 대기실·진행 중 얼굴: 삿갓·쓰개치마로 얼굴을 가린 식구 (옷 색으로 구분) */
@@ -613,7 +612,7 @@ function jobCard(me,show){if(!show)return `<div class="jobcard jback"><div class
   if(me.job==='citizen'&&f)main=`${SBART[sbKey(f)]?`<img class="sbimg" src="${SBART[sbKey(f)]}" alt="">`:`<div class="jemo">${f.n.split(' ')[0]}</div>`}<div class="jname">${esc(f.n.split(' ').slice(1).join(' '))}</div><div class="jflav">🏮 종갓집 편</div><div class="jab">${esc(f.d)}<br><br>${J.ability}</div>`;
   else main=`${jart(me.job,me.gender)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div>${m&&f?`<div class="jflav">${SBART[sbKey(f)]?`<img class="sbmini" src="${SBART[sbKey(f)]}" alt="">`:''}위장 신분: ${esc(f.n)}</div>`:''}<div class="jab">${J.ability}${m&&f?`<br><br>🎭 들키면 이렇게 둘러대세요: “${esc(f.d)}”`:''}</div>`;
   return `<div class="jobcard ${m?'jm':'jc'} ${show?'':'hide-role'}"><div class="jteam">${m?'刺客 · 자객패':'宗家 · 종갓집'}</div>${main}${me.job==='soldier'?`<div class="jflav">남은 방패: ${me.armor?'🛡️ 1':'없음'}</div>`:''}${m&&show?`<div class="jflav">동료 자객: ${V.mates.map(esc).join(', ')||'없음'}</div>`:''}</div>`}
-function jart(job,g){const k=(g==='F'?{doctor:'j_ijang_F',police:'j_podo_F',soldier:'j_soldier_F'}[job]:0)||JART[job]||(job==='citizen'?(g==='F'?'j_jumo':'j_dolsoe'):null);return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
+function jart(job,g){const k=(g==='F'?{doctor:'j_ijang_F',police:'j_podo_F',soldier:'j_soldier_F'}[job]:0)||JART[job];return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
 function revealHtml(job,f){const J=JOBS[job]||JOBS.citizen;
   if(job==='mafia')return `<div class="reveal">정체는 🗡️ <b>자객</b>${f?` · ${esc(f.n)}(으)로 위장하고 있었습니다`:''}</div>`;
   if(job==='citizen'&&f)return `<div class="reveal"><b>${esc(f.n)}</b><br><span class="muted">${esc(f.d)}</span></div>`;
