@@ -233,6 +233,9 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 #rolecard .jobcard>*{grid-column:2}#rolecard .jobcard>.jart,#rolecard .jobcard>.sbimg,#rolecard .jobcard>.jemo{grid-column:1;grid-row:1/span 8;margin:0}
 #rolecard .jobcard>.jart{float:none;height:230px;width:auto;max-width:200px}#rolecard .jobcard>.sbimg{width:170px;height:170px}#rolecard .jobcard>.jemo{font-size:80px;padding:0 10px}
 #rolecard .jobcard.jback{display:block;text-align:center}#rolecard .jback .jab{margin-top:14px}#rolecard .jname{font-size:30px}#rolecard .jab{font-size:14px;line-height:1.5}
+.bigres{position:absolute;left:50%;transform:translateX(-50%);top:258px;padding:10px 30px 12px;text-align:center;white-space:nowrap;border-radius:10px;animation:brIn .5s ease-out}
+.br-n{font-family:"Song Myung",serif;font-size:40px;line-height:1.1;color:#fff3dc;-webkit-text-stroke:.8px currentColor}.br-v{font-size:24px;font-weight:700;margin-top:4px;color:#f3e6c8}.bigres .rd{color:#ff7b6b}.bigres .bl{color:#8fc8ff}
+@keyframes brIn{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
 </style>
 
 </head>
@@ -733,7 +736,9 @@ function phaseLine(){const r=V.round;return {lobby:'식구들이 고택에 모�
 function hudHtml(){const alive=V.players.filter(p=>p.alive).length;
   const phaseTxt={lobby:'대기 중',roles:'호패 확인',day:'오시(午時) 공론 종료',vote:'멍석말이 지목',defense:'최후 변론',judge:'찬반 투표',result:'공론 결과',night:'자시(子時)',morning:'아침',end:'놀이 끝'}[V.phase];
   return `<div class="hud dark">${V.round?`${V.round}일째 | `:''}생존자: ${alive} / ${V.players.length}${V.phase!=='lobby'&&V.mafiaLeft!=null?` | <span class="rd">자객: ${V.mafiaLeft}명 남음</span>`:''}</div>
-  <div class="hud2 dark">${phaseTxt}${V.phase==='day'?': <span class="tm"></span>':''}${V.phase==='vote'?` ${V.voted}/${V.voters}`:''}${V.phase==='defense'?': <span class="tm"></span>':''}${V.phase==='judge'?` ${V.jvoted}/${V.jneed}`:''}${V.phase==='result'&&V.lastWords?` · 마지막 한마디 <span class="tm"></span>`:''}</div>`}
+  <div class="hud2 dark">${phaseTxt}${V.phase==='day'?': <span class="tm"></span>':''}${V.phase==='vote'?` ${V.voted}/${V.voters}`:''}${V.phase==='defense'?': <span class="tm"></span>':''}${V.phase==='judge'?` ${V.jvoted}/${V.jneed}`:''}${V.phase==='result'&&V.lastWords?` · 마지막 한마디 <span class="tm"></span>`:''}</div>${V.phase==='result'&&V.result?bigResHtml(V.result):''}`}
+function bigResHtml(r){const [a,b,c]=r.dead?[`${esc(r.deadName)} 송치`,r.role==='M'?'⛓️ 자객 포박!':'😢 억울한 식구, 관아로 끌려감',r.role==='M'?'rd':'bl']:r.spared?[`${esc(r.sparedName)} 방면`,`⚖️ 찬성 ${r.jy} · 반대 ${r.jn}`,'bl']:r.revote?['🤝 동점!','동점자끼리 다시 지목합니다','']:['🤝 재지목도 동점','오늘은 송치 없음',''];
+  return `<div class="bigres dark"><div class="br-n">${a}</div><div class="br-v ${c}">${b}</div></div>`}
 function selectable(){if(!V||!V.me||!V.me.alive)return[];
   if(V.phase==='vote'&&V.myVote===undefined)return V.cands.filter(t=>t!==V.me.token);
   if(V.phase==='night'&&V.targets&&!V.myNight)return V.targets;return[]}
