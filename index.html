@@ -681,7 +681,7 @@ function bottomBox(){
     return `<div class="btxt">${V.revote?'동점자 재지목! ':''}멍석말이 대상을 지목하시오. <b>좌우 명단에서 고르세요</b></div><div class="brow">${sel?btn('sub',`⛓️ ${esc(sel)} 지목 (취소 불가)`,'red'):'<span class="muted2">이름을 눌러 선택</span>'}${hb}</div>`}
   if(ph==='result'){const r=V.result;
     return `<div class="btxt">${r.dead?`${esc(r.deadName)} 송치 · <b class="${r.role==='M'?'rd':'bl'}">${r.role==='M'?'⛓️ 자객 포박!':'😢 억울한 식구, 관아로 끌려감'}</b>`:(r.revote?'🤝 동점! 동점자끼리 재지목합니다':'🤝 재지목도 동점, 송치 없음')}</div><div class="brow">${btn('m-result','📜 결과 보기')}${H(btn('next',r.revote?'재지목 시작':'다음으로','red'))}</div>`}
-  if(ph==='night'){const job=me&&me.alive?me.job:null;const hc=isHost?hostCheck():null;const hb=isHost?`<span class="muted2">밤 행동 ${hc.nightDone}/${hc.nightNeed}</span>`+btn('endnight','밤 끝내기'):'';
+  if(ph==='night'){const job=me&&me.alive?me.job:null;const hc=isHost?hostCheck():null;const hb=isHost?`<span class="muted2">밤 행동 ${hc.nightDone}/${hc.nightNeed}</span>`+`<span class="hw">${btn('endnight','밤 끝내기')}<small>집사에게만 보여요</small></span>`:'';
     let t,b='';
     if(job==='mafia'){t=V.myNight?`✅ ${esc(pn(V.myNight))} 선택 완료${V.mateNight.length?' · 동료: '+V.mateNight.map(esc).join(', '):''}`:`🗡️ 오늘 밤 노릴 사람을 고르세요${V.mateNight.length?' (동료: '+V.mateNight.map(esc).join(', ')+')':''}`;b=(!V.myNight&&sel?btn('nsub',`🗡️ ${esc(sel)} 노리기`,'red'):'')+btn('m-chat','🤫 밀담')}
     else if(job==='police'){t=V.myNight?`📜 ${esc(pn(V.myNight))}: <b class="${V.police?'rd':'bl'}">${V.police?'자객입니다!':'자객이 아닙니다'}</b> (수첩에 적어뒀어요)`:'📜 마패를 꺼내 뒤를 캘 사람을 고르세요';b=!V.myNight&&sel?btn('nsub',`📜 ${esc(sel)} 조사`,'red'):''}
