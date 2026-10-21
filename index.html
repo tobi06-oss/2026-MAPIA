@@ -241,6 +241,7 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .cp-h{font-size:15px;font-weight:700;color:#ffd98a;display:flex;align-items:center;gap:8px}.cp-h span{font-size:12px;font-weight:400;color:#cdbb98;flex:1}.cp-x{background:none;border:1px solid #8b6a43;color:#f3e6c8;border-radius:12px;padding:1px 9px;font:inherit;font-size:12px}
 .cp-msgs{font-size:13.5px;line-height:1.35;min-height:38px;color:#f3e6c8}.cp-msgs b{color:#ffd98a;margin-right:4px}.muted2{color:#cdbb98}
 .cpanel .qk{margin-top:3px;gap:4px}.cpanel .qb{font-size:12.5px;padding:3px 9px;background:#2e2318;color:#f3e6c8;border-color:#8b6a43}.cpanel .qn{color:#ffb4a8;border-color:#b0453a}.cpanel .qn.on{background:#8a1f1f;color:#fff}.cpanel .qt{color:#cdbb98}
+.fakeh{margin-top:8px;border:1.5px dashed #f0c27a;border-radius:8px;padding:6px 8px;background:rgba(240,194,122,.08)}.fk-n{font-size:12.5px;color:#f0c27a}.fk-c{display:flex;gap:8px;align-items:center;margin-top:4px;font-size:13px;line-height:1.35}.fk-c img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #f0c27a;flex:0 0 46px}.fk-c b{font-size:15px;color:#ffe2ae}
 </style>
 
 </head>
@@ -398,8 +399,9 @@ function hostCmd(c){ // 방장 화면 버튼
     const draw1=(gender,low)=>{const pool=gender==='F'?SINBUN.F:gender==='M'?SINBUN.M:SINBUN.F.concat(SINBUN.M);
       let c=shuffle(pool.filter(x=>!used.has(x[0])&&(!low||x[2])));if(!c.length)c=shuffle(pool.filter(x=>!used.has(x[0])));const x=c[0];if(!x)return null;used.add(x[0]);return{n:x[0],d:x[1]}};
     g.players.forEach((p,i)=>{p.job=jobs[i];p.role=JOBS[p.job].team;p.alive=true;p.armor=p.job==='soldier'?1:0;p.flavor=null});
-    g.players.filter(p=>p.job==='mafia').forEach(p=>p.flavor=draw1(p.gender,true));
     g.players.filter(p=>p.job==='citizen').forEach(p=>p.flavor=draw1(p.gender,false));
+    const held=new Set(used);
+    g.players.filter(p=>p.job==='mafia').forEach(p=>{p.flavor=draw1(p.gender,false);const pool=p.gender==='F'?SINBUN.F:p.gender==='M'?SINBUN.M:SINBUN.F.concat(SINBUN.M);p.covers=pool.filter(x=>!held.has(x[0])).map(x=>x[0])});
     g.round=0;g.outN=0;g.players.forEach(x=>{delete x.out});g.log=[];g.chat=[];g.winner=null;g.ending=null;g.stats={wrong:0,caught:0,mafia0:g.players.filter(x=>x.role==='M').length};g.phase='roles';}
   if(c.k==='day')startDay();
   if(c.k==='vote')startVote(false);
@@ -527,7 +529,7 @@ function viewFor(tok){
   const v={phase:g.phase,code:g.code,round:g.round,cfg:g.cfg,log:g.log,
     players:g.players.map(x=>({token:x.token,name:x.name,intro:x.intro||'',gender:x.gender||'',rev:!x.alive&&x.job?{job:x.job,flavor:x.flavor}:null,alive:x.alive,online:x.token===myToken||!!x.online})),
     votedTokens:g.phase==='vote'?Object.keys(g.votes):null,mafiaLeft:g.phase==='lobby'?null:cntRole('M'),
-    me:p?{token:p.token,name:p.name,gender:p.gender,role:p.role,job:p.job,flavor:p.flavor,armor:p.armor,alive:p.alive,apply:!!p.apply}:null,applicants:g.players.filter(x=>x.apply).length,remain:Math.max(0,g.endAt-Date.now())};
+    me:p?{token:p.token,name:p.name,gender:p.gender,role:p.role,job:p.job,flavor:p.flavor,armor:p.armor,alive:p.alive,covers:p.covers||null,apply:!!p.apply}:null,applicants:g.players.filter(x=>x.apply).length,remain:Math.max(0,g.endAt-Date.now())};
   if(p&&p.role==='M')v.mates=g.players.filter(x=>x.role==='M'&&x!==p).map(x=>x.name);
   if(g.phase==='vote'){v.cands=g.cands;v.revote=g.revote;v.voted=Object.keys(g.votes).length;v.voters=aliveP().length;
     v.myVote=p?g.votes[tok]:undefined;if(v.myVote!==undefined)v.tally=tally(g.votes,g.cands)}
@@ -609,7 +611,7 @@ function tallyHtml(t,mark){const tot=t.reduce((a,b)=>a+b.n,0)||1;const mx=Math.m
 function jobCard(me,show){if(!show)return `<div class="jobcard jback"><div class="jteam">號牌</div><div class="jemo">📜</div><div class="jname">호패</div><div class="jab">손가락으로 누르고 있는 동안만 보여요.<br>옆사람이 못 보게 가리고 확인하세요!</div></div>`;const J=JOBS[me.job]||JOBS.citizen,m=me.role==='M',f=me.flavor;
   let main;
   if(me.job==='citizen'&&f)main=`${SBART[sbKey(f)]?`<img class="sbimg" src="${SBART[sbKey(f)]}" alt="">`:`<div class="jemo">${f.n.split(' ')[0]}</div>`}<div class="jname">${esc(f.n.split(' ').slice(1).join(' '))}</div><div class="jflav">🏮 종갓집 편</div><div class="jab">${esc(f.d)}<br><br>${J.ability}</div>`;
-  else main=`${jart(me.job,me.gender)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div>${m&&f?`<div class="jflav">${SBART[sbKey(f)]?`<img class="sbmini" src="${SBART[sbKey(f)]}" alt="">`:''}위장 신분: ${esc(f.n)}</div>`:''}<div class="jab">${J.ability}${m&&f?`<br><br>🎭 들키면 이렇게 둘러대세요: “${esc(f.d)}”`:''}</div>`;
+  else main=`${jart(me.job,me.gender)||`<div class="jemo">${J.emo}</div>`}<div class="jname">${J.name}</div><div class="jab">${J.ability}</div>${m&&f?`<div class="fakeh"><div class="fk-n">🎭 자객에 뽑히면 위장을 위한 <b>거짓 호패</b>가 주어집니다</div><div class="fk-c">${SBART[sbKey(f)]?`<img src="${SBART[sbKey(f)]}" alt="">`:''}<div><b>${esc(f.n)}</b><div>“${esc(f.d)}”</div></div></div></div>`:''}`;
   return `<div class="jobcard ${m?'jm':'jc'} ${show?'':'hide-role'}"><div class="jteam">${m?'刺客 · 자객패':'宗家 · 종갓집'}</div>${main}${me.job==='soldier'?`<div class="jflav">남은 방패: ${me.armor?'🛡️ 1':'없음'}</div>`:''}${m&&show?`<div class="jflav">동료 자객: ${V.mates.map(esc).join(', ')||'없음'}</div>`:''}</div>`}
 function jart(job,g){const k=(g==='F'?{doctor:'j_ijang_F',police:'j_podo_F',soldier:'j_soldier_F'}[job]:0)||JART[job];return k?`<img class="jart" src="${G2[k]}" alt="">`:''}
 function revealHtml(job,f){const J=JOBS[job]||JOBS.citizen;
@@ -828,9 +830,9 @@ function modalHtml(){const c=V&&V.cfg;
   case 'rules':return `<h2>📜 놀이 방법</h2><div class="rules"><b>🎯 목표</b><br>🏮 종갓집: 숨어든 자객을 모두 관아로 송치하면 승리<br>🗡️ 자객패: 자객 수가 식구 수와 같아지면 승리<br><br>
     <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람이 최후 변론을 하고, 모두 찬반 투표로 송치 여부를 정해요. 찬성이 더 많으면 관아로 송치되고 정체가 드러나요. 지목이 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 눈을 감고, 자객·암행어사·의원만 폰으로 몰래 움직여요.<br>6. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
     <b>🗡️ 자객 지원</b><br>대기실에서 몰래 지원하면 자객에 뽑힐 확률이 소폭 올라가요. 지원해서 자객이 된 뒤 이기면 🎁 기념품, 지면 30분간 포박!<br><br><b>🤐 약속</b><br>탈락한 사람은 말하지 않기. 남의 폰 훔쳐보지 않기.</div>`;
-  case 'dex':{const row=x=>`<div class="dexrow dexs">${SBART[x[0].split(' ').slice(1).join(' ')]?`<img class="sbmini big" src="${SBART[x[0].split(' ').slice(1).join(' ')]}" alt="">`:''}<b>${esc(x[0])}</b>${x[2]?' <span class="muted">🎭</span>':''}<div class="muted">${esc(x[1])}</div></div>`;
+  case 'dex':{const row=x=>`<div class="dexrow dexs">${SBART[x[0].split(' ').slice(1).join(' ')]?`<img class="sbmini big" src="${SBART[x[0].split(' ').slice(1).join(' ')]}" alt="">`:''}<b>${esc(x[0])}</b><div class="muted">${esc(x[1])}</div></div>`;
     return `<h2>📖 직업 도감</h2><h3>고정 직업</h3>${['mafia','police','doctor','soldier'].map(k=>{const J=JOBS[k],src=idSrc(k);return `<div class="dexrow dexs">${src?`<img class="sbmini big" style="object-position:center 12%" src="${src}" alt="">`:''}<b class="${J.team==='M'?'rd':'bl'}">${J.emo} ${J.name}</b> <span class="muted">${TEAM[J.team]}</span><div class="muted">${J.ability}</div></div>`}).join('')}
-    <h3>👩 아씨들의 신분 (${SINBUN.F.length})</h3>${SINBUN.F.map(row).join('')}<h3>👨 도령들의 신분 (${SINBUN.M.length})</h3>${SINBUN.M.map(row).join('')}<div class="muted center" style="margin-top:8px">🎭 표시는 자객이 위장할 수도 있는 신분이에요</div>`}
+    <h3>👩 아씨들의 신분 (${SINBUN.F.length})</h3>${SINBUN.F.map(row).join('')}<h3>👨 도령들의 신분 (${SINBUN.M.length})</h3>${SINBUN.M.map(row).join('')}<div class="muted center" style="margin-top:8px">🎭 자객은 그 판에 아무도 받지 않은 신분 중 하나로 위장할 수 있어요</div>`}
   case 'invite':{const link=location.href.split('#')[0]+'#room='+V.code+(LOCAL?'&local=1':'');
     return `<h2>📱 식구 초대</h2><div class="center"><div class="muted">고택 문패</div><div class="code">${esc(V.code)}</div><div id="qr"></div><div class="muted" style="word-break:break-all">${esc(link)}</div>${btn('share','🔗 링크 공유/복사')}</div>`}
   case 'settings':{const n=V.players.length,mx=maxMafia(n,c.gap);const st=(k,v)=>`<div class="step"><button class="wood" data-c="${k}" data-d="-1">−</button><b>${v}</b><button class="wood" data-c="${k}" data-d="1">+</button></div>`;
