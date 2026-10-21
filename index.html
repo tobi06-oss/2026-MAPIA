@@ -237,6 +237,11 @@ button.blue{background:linear-gradient(#336b88,#1f4a61);border:2px solid #0f2633
 .br-n{font-family:"Song Myung",serif;font-size:40px;line-height:1.1;color:#fff3dc;-webkit-text-stroke:.8px currentColor}.br-v{font-size:24px;font-weight:700;margin-top:4px;color:#f3e6c8}.bigres .rd{color:#ff7b6b}.bigres .bl{color:#8fc8ff}
 @keyframes brIn{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
 .qk{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}.qb{background:#f6ead0;border:1.5px solid #8b6a43;border-radius:16px;padding:5px 11px;font:inherit;font-size:14px;color:#3b2a1a;cursor:pointer}.qb:active{background:#e5d1a6}.qn{border-color:#8a1f1f;color:#8a1f1f}.qt{font-size:13px;color:#7a6851;margin-right:2px}
+.cnote{max-width:600px;white-space:normal}.cnote .br-n{font-size:34px}.cnote .br-v{font-size:19px;word-break:keep-all}#bbox.ig .btxt{display:none}
+.cpanel{position:absolute;left:204px;top:246px;width:618px;height:196px;padding:6px 10px;display:flex;flex-direction:column;gap:2px;text-align:left}
+.cp-h{font-size:15px;font-weight:700;color:#ffd98a;display:flex;align-items:center;gap:8px}.cp-h span{font-size:12px;font-weight:400;color:#cdbb98;flex:1}.cp-x{background:none;border:1px solid #8b6a43;color:#f3e6c8;border-radius:12px;padding:1px 9px;font:inherit;font-size:12px}
+.cp-msgs{font-size:13.5px;line-height:1.35;min-height:38px;color:#f3e6c8}.cp-msgs b{color:#ffd98a;margin-right:4px}.muted2{color:#cdbb98}
+.cpanel .qk{margin-top:3px;gap:4px}.cpanel .qb{font-size:12.5px;padding:3px 9px;background:#2e2318;color:#f3e6c8;border-color:#8b6a43}.cpanel .qn{color:#ffb4a8;border-color:#b0453a}.cpanel .qn.on{background:#8a1f1f;color:#fff}.cpanel .qt{color:#cdbb98}
 </style>
 
 </head>
@@ -717,8 +722,8 @@ function syncNotes(){if(!V||V.phase!=='night'||V.police===undefined||!V.myNight)
 /* ---- 무대 ---- */
 function stageHtml(){
   const inGame=screen!=='home'&&V;
-  return `<div class="sign"><div class="s1">가면 뒤의 진실,</div><div class="s2">종갓집 자객 소동</div></div>${profilePanel()}${logPanel()}${inGame?hudHtml()+slotsHtml():''}
-  <div id="bbox">${bottomBox()}</div>
+  return `<div class="sign"><div class="s1">가면 뒤의 진실,</div><div class="s2">종갓집 자객 소동</div></div>${profilePanel()}${logPanel()}${inGame?hudHtml()+slotsHtml()+centerHtml():''}
+  <div id="bbox" class="${inGame?'ig':''}">${bottomBox()}</div>
   <button class="wood corner" id="cornerL" style="left:16px">${cornerLLabel()}</button>
   <button class="wood corner" id="cornerR" style="left:858px">☰ 메뉴/설정</button>
 `}
@@ -738,7 +743,33 @@ function phaseLine(){const r=V.round;return {lobby:'식구들이 고택에 모�
 function hudHtml(){const alive=V.players.filter(p=>p.alive).length;
   const phaseTxt={lobby:'대기 중',roles:'호패 확인',day:'오시(午時) 공론 종료',vote:'멍석말이 지목',defense:'최후 변론',judge:'찬반 투표',result:'공론 결과',night:'자시(子時)',morning:'아침',end:'놀이 끝'}[V.phase];
   return `<div class="hud dark">${V.round?`${V.round}일째 | `:''}생존자: ${alive} / ${V.players.length}${V.phase!=='lobby'&&V.mafiaLeft!=null?` | <span class="rd">자객: ${V.mafiaLeft}명 남음</span>`:''}</div>
-  <div class="hud2 dark">${phaseTxt}${V.phase==='day'?': <span class="tm"></span>':''}${V.phase==='vote'?` ${V.voted}/${V.voters}`:''}${V.phase==='defense'?': <span class="tm"></span>':''}${V.phase==='judge'?` ${V.jvoted}/${V.jneed}`:''}${V.phase==='result'&&V.lastWords?` · 마지막 한마디 <span class="tm"></span>`:''}</div>${V.phase==='result'&&V.result?bigResHtml(V.result):''}`}
+  <div class="hud2 dark">${phaseTxt}${V.phase==='day'?': <span class="tm"></span>':''}${V.phase==='vote'?` ${V.voted}/${V.voters}`:''}${V.phase==='defense'?': <span class="tm"></span>':''}${V.phase==='judge'?` ${V.jvoted}/${V.jneed}`:''}${V.phase==='result'&&V.lastWords?` · 마지막 한마디 <span class="tm"></span>`:''}</div>`}
+let chatOpen=true;
+function cnote(a,b,c){return `<div class="bigres cnote dark"><div class="br-n">${a}</div>${b?`<div class="br-v ${c||''}">${b}</div>`:''}</div>`}
+function chatPanelHtml(){const c=(V.chat||[]).slice(-3);
+  return `<div class="cpanel dark"><div class="cp-h">🤫 자객 밀담 <span>${V.myNight?`✅ ${esc(pn(V.myNight))} 선택함`:'노릴 사람을 누르면 동료에게 알리고 바로 고를 수 있어요'}</span><button class="cp-x" id="cp-close">접기 ✕</button></div>
+  <div class="cp-msgs">${c.length?c.map(m=>`<div><b>${esc(m.from)}</b> ${esc(m.text)}</div>`).join(''):`<div class="muted2">${V.mates&&V.mates.length?'동료: '+V.mates.map(esc).join(', '):'혼자인 자객이오'}${V.mateNight.length?' · '+V.mateNight.map(esc).join(', '):''}</div>`}</div>
+  ${V.myNight?'':`<div class="qk"><span class="qt">🎯</span>${(V.targets||[]).map(t=>`<button class="qb qn ${voteSel===t?'on':''}" data-qt="${t}">${esc(pn(t))}</button>`).join('')}</div>`}
+  <div class="qk">${QUICK.map(q=>`<button class="qb" data-q="${esc(q)}">${esc(q)}</button>`).join('')}<button class="qb" id="cp-type">✍️ 직접 쓰기</button></div></div>`}
+function centerHtml(){const ph=V.phase,me=V.me,al=me&&me.alive;
+  if(ph==='result')return V.result?bigResHtml(V.result):'';
+  if(ph==='lobby')return cnote(`🏮 문패 ${esc(V.code)}`,`식구 ${V.players.length}명 입장 · ${isHost?'모두 모이면 시작하세요':'집사가 시작하기를 기다리는 중'}`);
+  if(ph==='roles')return cnote('🤫 호패 확인',me?'옆사람 몰래, 아래 버튼을 누르고 있는 동안만 보여요':'호패를 나눠주었습니다');
+  if(ph==='day')return cnote('☀️ 사랑방 공론',V.round===1?'돌아가며 이름과 한마디 소개부터!':'얼굴 보고 토론하시오 · 남은 시간 <span class="tm"></span>');
+  if(ph==='vote'){if(!al)return cnote('📜 멍석말이 지목',`${me?'💀 탈락자는 지켜보기만 · ':''}${V.voted}/${V.voters}명 지목`);
+    if(V.myVote!==undefined)return cnote(`✅ ${esc(pn(V.myVote))} 지목`,`다른 식구를 기다리는 중 (${V.voted}/${V.voters})`);
+    return cnote(V.revote?'🤝 동점자 재지목':'📜 멍석말이 지목',voteSel?`${esc(pn(voteSel))} 선택됨 · 아래 버튼으로 확정`:'좌우 명단에서 한 명을 고르시오','rd')}
+  if(ph==='defense')return cnote(`⚖️ ${esc(V.accName)} 최후 변론`,me&&me.token===V.accused?'억울함을 호소하시오! <span class="tm"></span>':'남은 시간 <span class="tm"></span>');
+  if(ph==='judge'){if(!al||me.token===V.accused)return cnote(`⚖️ ${esc(V.accName)} 찬반 투표`,`${me&&me.token===V.accused?'식구들이 당신의 운명을 정하는 중':'지켜보는 중'} (${V.jvoted}/${V.jneed})`);
+    return V.myJ?cnote(`✅ ${V.myJ==='y'?'송치 찬성':'송치 반대'}`,`다른 식구를 기다리는 중 (${V.jvoted}/${V.jneed})`):cnote(`${esc(V.accName)}, 관아로 보낼까?`,'아래에서 찬성 또는 반대를 누르시오','rd')}
+  if(ph==='night'){const job=al?me.job:null;
+    if(job==='mafia'){if(chatOpen)return chatPanelHtml();return cnote(V.myNight?`✅ ${esc(pn(V.myNight))} 노림`:'🗡️ 오늘 밤 노릴 사람을 고르시오',V.mateNight.length?'동료: '+V.mateNight.map(esc).join(', '):(V.myNight?'동료를 기다리는 중':'좌우 명단에서 고르시오'),'rd')}
+    if(job==='police')return V.myNight?cnote(`📜 ${esc(pn(V.myNight))}`,V.police?'자객입니다!':'자객이 아닙니다',V.police?'rd':'bl'):cnote('📜 뒤를 캘 사람을 고르시오','좌우 명단에서 한 명을 누르시오');
+    if(job==='doctor')return V.myNight?cnote(`🌿 ${esc(pn(V.myNight))} 곁을 지킴`,'약을 달이며 아침을 기다리는 중'):cnote('🌿 돌볼 사람을 고르시오','자신도 고를 수 있어요');
+    return cnote('🌙 자시(子時)',me&&!al?'💀 관전 중 · 말하면 안 돼요':'눈을 감고 폰을 내려놓으시오')}
+  if(ph==='morning')return cnote(V.nightDead?`💀 ${esc(V.nightDead)}`:'🐓 무사한 아침',esc(V.news||''));
+  if(ph==='end')return cnote(V.winner==='M'?'🗡️ 자객패 승리':'🏮 종갓집 승리','호패 공개를 눌러 결과를 보시오',V.winner==='M'?'rd':'bl');
+  return ''}
 function bigResHtml(r){const [a,b,c]=r.dead?[`${esc(r.deadName)} 송치`,r.role==='M'?'⛓️ 자객 포박!':'😢 억울한 식구, 관아로 끌려감',r.role==='M'?'rd':'bl']:r.spared?[`${esc(r.sparedName)} 방면`,`⚖️ 찬성 ${r.jy} · 반대 ${r.jn}`,'bl']:r.revote?['🤝 동점!','동점자끼리 다시 지목합니다','']:['🤝 재지목도 동점','오늘은 송치 없음',''];
   return `<div class="bigres dark"><div class="br-n">${a}</div><div class="br-v ${c}">${b}</div></div>`}
 function selectable(){if(!V||!V.me||!V.me.alive)return[];
@@ -854,7 +885,7 @@ function bind(){
   on('#cornerR','click',()=>openM('menu'));
   on('#mclose','click',()=>{modal=null;errMsg='';draw()});on('#sp-tally','click',()=>openM('rtally'));on('#sp-next','click',()=>{modal=null;cmd('next')});on('#dim','click',()=>{modal=null;draw()});
   on('#m-rules','click',()=>openM('rules'));on('#m-dex','click',()=>openM('dex'));on('#m-settings','click',()=>openM('settings'));on('#m-invite','click',()=>openM('invite'));
-  on('#m-apply','click',()=>openM('apply'));on('#m-card','click',()=>openM('card'));on('#m-chat','click',()=>openM('chat'));on('#m-tally','click',()=>openM('tally'));
+  on('#m-apply','click',()=>openM('apply'));on('#m-card','click',()=>openM('card'));on('#m-chat','click',()=>{if(V&&V.phase==='night'&&me_alive()){chatOpen=!chatOpen;draw()}else openM('chat')});on('#cp-close','click',()=>{chatOpen=false;draw()});on('#cp-type','click',()=>openM('chat'));$$('[data-qt]').forEach(b=>b.onclick=()=>{voteSel=b.dataset.qt;act({t:'chat',text:pn(voteSel)+' 노리자'});draw()});on('#m-tally','click',()=>openM('tally'));
   on('#m-result','click',()=>openM('result'));on('#m-morning','click',()=>openM('morning'));on('#m-end','click',()=>openM('end'));
   on('#snd-bgm','click',()=>{LS.set('snd-bgm',!sndPref('bgm'));audioUnlock();bgmForPhase();if(!V&&sndPref('bgm'))bgmSet('day');draw()});
   on('#snd-sfx','click',()=>{LS.set('snd-sfx',!sndPref('sfx'));if(sndPref('sfx'))sfx('moktak');draw()});
@@ -892,7 +923,7 @@ function buzz(){try{navigator.vibrate&&navigator.vibrate([400,200,400])}catch(e)
 // 단계가 바뀌면 진동 + 선택 초기화 + 알맞은 두루마리 자동으로 열기
 const _draw=draw;draw=function(){if(V&&V.phase!==lastPhase){if(lastPhase&&['vote','night','result','morning','end'].includes(V.phase))try{navigator.vibrate&&navigator.vibrate(300)}catch(e){};
   if(lastPhase&&isHost){const ph=V.phase;if(ph==='vote')sfx('gong');else if(ph==='night')sfx('owl');else if(ph==='result'){sfx('drum');setTimeout(()=>sfx('drum'),450)}else if(ph==='morning')sfx('chime');else if(ph==='end'){sfx('gong');setTimeout(()=>sfx('drum'),900)}else if(ph==='day'||ph==='roles')sfx('chime')}
-  lastPhase=V.phase;voteSel=null;peekRole=false;modal={roles:'card',result:'result',morning:'morning',end:'end'}[V.phase]||null}
+  lastPhase=V.phase;voteSel=null;chatOpen=true;peekRole=false;modal={roles:'card',result:'result',morning:'morning',end:'end'}[V.phase]||null}
   syncNotes();_draw();bgmForPhase()};
 
 
