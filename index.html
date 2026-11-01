@@ -455,7 +455,7 @@ function hostAct(tok,m){
       else if(st==='police'){N.police={target:m.target,isM:tgt.role==='M'};if(tgt.role==='M'&&G.stats&&G.stats.pol)G.stats.pol[tok]=(G.stats.pol[tok]||0)+1}
       else if(st==='soldier')N.doctor=m.target;
       else if(st==='pred')N.pred[tok]=m.target;
-      else N.sus[tok]={t:m.target,why:String(m.why||'').trim().slice(0,40),dead:!p.alive}; // 쪽지: 자객도 위장용으로 냄, 탈락자 쪽지는 점수에만
+      else N.sus[tok]={t:m.target,why:String(m.why||'').trim().slice(0,40),dead:!p.alive}; // 쪽지: 탈락자 쪽지는 점수에만
       tryEndNight()}}
   if(m.t==='jv'&&G.phase==='judge'&&p.alive&&tok!==G.accused&&!(tok in G.jv)&&(m.v==='y'||m.v==='n')){G.jv[tok]=m.v;if(judgeVoters().every(x=>x.token in G.jv))resolveJudge()}
   if(m.t==='ghost'&&!p.alive&&G.phase!=='lobby'){const t=String(m.text||'').trim().slice(0,120);if(t){(G.ghost||(G.ghost=[])).push({from:p.name,tok:p.token,text:t});if(G.ghost.length>200)G.ghost.splice(0,G.ghost.length-200)}} // 저승 사랑방: 탈락자끼리만, 정체는 안 보여줌
@@ -614,9 +614,9 @@ function resolveJudge(){const r=G.first,p=G.players.find(x=>x.token===G.accused)
 const NIGHT_MIN=60; // 다 끝내도 밤은 최소 60초: 폰 내려놓는 시점이 단서가 되지 않게 (자객 밀담 시간은 줄지 않음)
 function startNight(){G.phase='night';G.daySus=null;G.night={mafia:{},police:null,doctor:null,sus:{},pred:{}};G.nightMin=Date.now()+NIGHT_MIN*1000}
 function nightActors(){return aliveP()} // 모두 두 번씩 찍음 → 폰 만지는 기척으로 역할을 알 수 없게
-// 밤 할 일: 식구·탈락자 = 🎯예측 → 🕯️자객 찍기 / 호위무사 = 호위(예측으로 채점) → 🕯️ / 암행어사 = 조사 → 🕯️ / 자객 = 노리기 → 🕯️위장 쪽지
+// 밤 할 일: 식구·탈락자 = 🎯예측 → 🕯️자객 찍기 / 호위무사 = 호위(예측으로 채점) → 🕯️ / 암행어사 = 조사 → 🕯️ / 자객 = 노리기 + 밀담
 function nightStep(p){const N=G.night;if(!N)return null;N.sus=N.sus||{};N.pred=N.pred||{};
-  if(p.alive&&p.job==='mafia'&&!(p.token in N.mafia))return 'mafia';
+  if(p.alive&&p.job==='mafia')return p.token in N.mafia?null:'mafia'; // 자객은 노리기 + 밀담만 (쪽지 없음)
   if(p.alive&&p.job==='police'&&!N.police)return 'police';
   if(p.alive&&p.job==='soldier'&&!N.doctor)return 'soldier';
   if((!p.alive||p.job==='citizen')&&!(p.token in N.pred))return 'pred';
@@ -740,7 +740,7 @@ let lastModal=null;
 function pn(t){const p=V.players.find(p=>p.token===t);return p?p.name:'?'}
 function me_alive(){return V.me&&V.me.alive}
 function tallyHtml(t,mark){const tot=t.reduce((a,b)=>a+b.n,0)||1;const mx=Math.max(...t.map(x=>x.n));return t.map(x=>`<div class="bar"><i style="width:${x.n/tot*100}%"></i><span>${esc(x.name)} · ${x.n}표${mark&&x.n===mx&&x.n>0?' ◀':''}</span></div>`).join('')}
-const TODO={mafia:'🌙 밤: 밀담으로 동료와 상의해 해칠 식구 1명 고르기<br>그다음 식구인 척 위장 쪽지 1장<br>☀️ 낮: 거짓 호패의 신분인 척 시치미 떼기',police:'🌙 밤: 1명을 골라 자객인지 조사 (결과는 암행 수첩에)<br>그다음 자객 같은 사람 쪽지 1장',soldier:'🌙 밤: 호위할 1명 고르기 (나도 돼요)<br>그다음 자객 같은 사람 쪽지 1장',citizen:'🌙 밤: 🎯 노려질 것 같은 사람 예측<br>그다음 🕯️ 자객 같은 사람 쪽지 1장 (아침에 익명 공개)'};
+const TODO={mafia:'🌙 밤: 밀담으로 동료와 상의해 해칠 식구 1명 고르기<br>☀️ 낮: 거짓 호패의 신분인 척 시치미 떼기',police:'🌙 밤: 1명을 골라 자객인지 조사 (결과는 암행 수첩에)<br>그다음 자객 같은 사람 쪽지 1장',soldier:'🌙 밤: 호위할 1명 고르기 (나도 돼요)<br>그다음 자객 같은 사람 쪽지 1장',citizen:'🌙 밤: 🎯 노려질 것 같은 사람 예측<br>그다음 🕯️ 자객 같은 사람 쪽지 1장 (아침에 익명 공개)'};
 const FLOW_HTML=`<div class="sec-box" style="margin-top:10px;text-align:left;font-size:15px;line-height:1.6"><b>📜 한눈에 보는 진행</b><br>☀️ 오시 공론: 얼굴 보고 토론 → 멍석말이 지목: 폰으로 몰래 1명 → 최후 변론 → 찬반 투표<br>🌙 자시: 모두 고개 숙이고 폰으로 각자 할 일 → 아침 소식<br>🏮 종갓집은 자객을 모두 송치하면, 자객패는 자객 수가 식구 수와 같아지면 승리</div>`;
 function jobCard(me,show){if(!show)return `<div class="jobcard jback"><div class="jteam">號牌</div><div class="jemo">📜</div><div class="jname">호패</div><div class="jab">손가락으로 누르고 있는 동안만 보여요.<br>옆사람이 못 보게 가리고 확인하세요!</div></div>`;const J=JOBS[me.job]||JOBS.citizen,m=me.role==='M',f=me.flavor;
   let main;
@@ -1014,7 +1014,7 @@ function modalHtml(){const c=V&&V.cfg;
   case 'menu':return `<h2>☰ 메뉴</h2><div class="mgrid">${btn('m-rules','📜 놀이 방법')}${btn('m-dex','📖 직업 도감')}${V&&(V.record||[]).length&&!['roles','day','vote','defense','judge','result','night','morning'].includes(V.phase)?btn('m-record','📊 전적판'):''}${!V||V.phase==='lobby'?btn('go-profile','✏️ 내 호패 정보'):''}${isHost&&V&&V.phase==='lobby'?btn('m-invite','📱 초대 (QR)'):''}${!V||isHost?btn('snd-bgm',sndPref('bgm')?'🎵 배경음악 끄기':'🎵 배경음악 켜기'):''}${btn('snd-sfx',sndPref('sfx')?'🔔 효과음 끄기':'🔔 효과음 켜기')}${MOBILE&&!STANDALONE?btn('m-install','📲 앱으로 받기'):btn('fs','⛶ 전체 화면')}${!V?btn('go-practice','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}${isHost&&V?btn('m-handover','👑 집사 넘기기'):''}${V?btn('quit','🚪 고택 나가기'):''}${isHost&&V&&(V.phase==='lobby'||V.players.some(p=>String(p.token).startsWith('bot-')))?btn('m-test','🧪 테스트 모드').replace('<button','<button style="grid-column:2"'):''}</div>
     <div class="muted" style="margin-top:12px">🧪 테스트 모드: 컴퓨터 식구 9명과 한 판을 돌려 화면을 미리 볼 수 있어요.<br>🔊 소리는 집사 폰에서 크게 틀어두는 걸 추천해요. 배경음악은 집사 폰에서만 나오고, 놀이 시작 전, 그리고 밤에만 재생됩니다.</div>`;
   case 'rules':return `<h2>📜 놀이 방법</h2><div class="rules"><b>🎯 목표</b><br>🏮 종갓집: 숨어든 자객을 모두 관아로 송치하면 승리<br>🗡️ 자객패: 자객 수가 식구 수와 같아지면 승리<br><br>
-    <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람이 최후 변론을 하고, 모두 찬반 투표로 송치 여부를 정해요. 찬성이 더 많으면 관아로 송치되고 정체가 드러나요. 지목이 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 고개를 숙이고 폰으로 몰래 움직여요. 자객·암행어사·호위무사는 제 할 일을(자객끼리 고른 사람이 동점으로 갈리면 그날 밤은 아무도 해치지 못해요), 식구는 🎯 '노려질 사람 예측'을 해요. 그다음 모두 🕯️ '자객 같은 사람 찍기'(이름+짧은 이유, 아침에 익명 공개)를 해요. 고를 때마다 이유를 두 글자 이상 직접 적어요. 탈락자도 두 가지를 다 하지만, 쪽지는 공개되지 않아요. 밤은 최소 1분 이어져서, 폰을 만지는 기척이나 내려놓는 때만으로는 역할을 알 수 없어요.<br>6. 🔍 <b>추리왕</b>: 노려질 사람을 맞히거나 진짜 자객을 찍을 때마다 1점. 끝나면 가장 많이 맞힌 사람이 추리왕이에요 (자객 제외).<br>7. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
+    <b>🔄 진행</b><br>1. 집사가 고택을 열고, 모두 문패 코드로 입장해요.<br>2. 각자 폰으로 호패(직업)를 몰래 확인해요.<br>3. ☀️ <b>오시(午時) · 사랑방 공론</b>: 정해진 시간 동안 얼굴 보고 토론해요.<br>4. 📜 <b>멍석말이 지목</b>: 시간이 끝나면 각자 폰으로 몰래 지목. 제출하면 못 바꾸고, 낸 사람만 현황을 볼 수 있어요. 가장 많이 지목된 사람이 최후 변론을 하고, 모두 찬반 투표로 송치 여부를 정해요. 찬성이 더 많으면 관아로 송치되고 정체가 드러나요. 지목이 동점이면 한 번 더!<br>5. 🌙 <b>자시(子時)</b>: 모두 고개를 숙이고 폰으로 몰래 움직여요. 자객·암행어사·호위무사는 제 할 일을(자객끼리 고른 사람이 동점으로 갈리면 그날 밤은 아무도 해치지 못해요), 식구는 🎯 '노려질 사람 예측'을 해요. 그다음 자객을 뺀 모두가 🕯️ '자객 같은 사람 찍기'(이름+짧은 이유, 아침에 익명 공개)를 해요. 고를 때마다 이유를 두 글자 이상 직접 적어요. 탈락자도 두 가지를 다 하지만, 쪽지는 공개되지 않아요. 밤은 최소 1분 이어져서, 폰을 만지는 기척이나 내려놓는 때만으로는 역할을 알 수 없어요.<br>6. 🔍 <b>추리왕</b>: 노려질 사람을 맞히거나 진짜 자객을 찍을 때마다 1점. 끝나면 가장 많이 맞힌 사람이 추리왕이에요 (자객 제외).<br>7. 🐓 <b>아침</b>: 간밤에 일어난 일이 공개되고 다시 오시로.<br><br>
     <b>🗡️ 자객 지원</b><br>대기실에서 몰래 지원하면 자객에 뽑힐 확률이 소폭 올라가요. 지원해서 자객이 된 뒤 이기면 🎁 기념품, 지면 30분간 포박!<br><br><b>🤐 약속</b><br>탈락한 사람은 말하지 않기 (탈락자들을 위한 👻 저승 사랑방이 열립니다).<br>남의 폰 훔쳐보지 않기.</div>`;
   case 'dex':{const row=x=>`<div class="dexrow dexs">${SBART[x[0].split(' ').slice(1).join(' ')]?`<img class="sbmini big" src="${SBART[x[0].split(' ').slice(1).join(' ')]}" alt="">`:''}<b>${esc(x[0])}</b><div class="muted">${esc(x[1])}</div></div>`;
     return `<h2>📖 직업 도감</h2><h3>고정 직업</h3>${['mafia','police','soldier'].map(k=>{const J=JOBS[k],src=idSrc(k);return `<div class="dexrow dexs">${src?`<img class="sbmini big" style="object-position:center 12%" src="${src}" alt="">`:''}<b class="${J.team==='M'?'rd':'bl'}">${J.emo} ${J.name}</b> <span class="muted">${TEAM[J.team]}</span><div class="muted">${J.ability}</div></div>`}).join('')}
